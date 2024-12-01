@@ -140,6 +140,7 @@ h5 {
     width: fit-content;
     padding: 0 var(--bead-size);
     user-select: none;
+    touch-action: none;
 }
 .found-words {
     position: absolute;

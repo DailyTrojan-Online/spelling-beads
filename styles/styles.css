@@ -23,6 +23,15 @@
     }
 }
 
+@media screen and (max-width: 400px) {
+    :root {
+        --bead-size: 35px;
+        --bead-horizontal-gap: 5px;
+        --bead-vertical-gap: 10px;
+        --bead-letter-size: 1rem;
+    }
+}
+
 body,
 html {
     margin: 0;

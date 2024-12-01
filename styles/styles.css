@@ -1,0 +1,171 @@
+:root {
+    --cardinal: #990000;
+    --gold: #FFCC00;
+    --bead-color: #d9dbdd;
+    --bead-size: 40px;
+    --bead-horizontal-gap: 7px;
+    --bead-vertical-gap: 10px;
+    --visible-beads: 5;
+    --max-per-row: 7;
+    --visible-width: calc(var(--bead-size) * var(--visible-beads) + var(--bead-horizontal-gap) * (var(--visible-beads) - 1));
+    --fade-width: 25px;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.game-wrapper {
+    width: calc(100vw - 80px);
+    max-width: 600px;
+    margin: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 40px;
+}
+.content {
+    position: relative;
+    height: fit-content;
+    width: fit-content;
+    padding: 0 40px;
+    user-select: none;
+}
+#row-fade-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--bead-vertical-gap);
+    width: calc(var(--visible-width) + var(--fade-width) * 2);
+    mask-image: linear-gradient(to right, transparent, black var(--fade-width), black calc(100% - var(--fade-width)), transparent 100%);
+    padding: 40px 0;
+    position: relative;
+}
+#left-buttons, #right-buttons {
+    position: absolute;
+    height: 100%;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    gap: var(--bead-vertical-gap);
+    align-items: center;
+    flex-direction: column;
+    top: 0;
+    z-index: 1;
+}
+#left-buttons button, #right-buttons button {
+    background: transparent;
+    color: rgb(183, 183, 196);
+    border: none;
+    padding: 10px;
+    border-radius: 100%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    height: var(--bead-size);
+    width: var(--bead-size);
+    transition: 0.12s;
+}
+#left-buttons button:hover, #right-buttons button:hover {
+    background: #edeef0;
+    color: #6f717c;
+}
+
+#left-buttons button:disabled, #right-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#left-buttons{
+    left: 0;
+}
+#right-buttons{
+    right: 0;
+}
+
+.row-wrapper {
+    background: linear-gradient(to bottom, transparent 0%, transparent calc(50% - 2px), var(--bead-color) calc(50% - 2px), var(--bead-color) calc(50% + 2px), transparent calc(50% + 2px));
+    width: 100%;
+    cursor: grab;
+}
+.row-wrapper:active {
+    cursor: grabbing;
+}
+
+.row-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--bead-horizontal-gap);
+    pointer-events: none;
+    user-select: none;
+}
+
+
+.letter {
+    flex-shrink: 0;
+    background: #d9dbdd;
+    border-radius: 100%;
+    width: var(--bead-size);
+    height: var(--bead-size);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: capitalize;
+    font-family: sans-serif;
+    transform: scale(1);
+    transition: 0.2s background, 0.2s transform;
+    transition-timing-function: ease-in-out;
+}
+.letter-correct {
+    transform: scale(1.2);
+    background: var(--gold);
+}
+
+@keyframes letter-correct {
+    0% {
+        transform: scale(1);
+        background: #d9dbdd;
+    }
+    100% {
+        transform: scale(1.2);
+        background: var(--gold);
+    }
+}
+
+button {
+    border: none;
+    background: transparent;
+    box-sizing: border-box;
+    border:1px solid #d9dbdd;
+    background: #d9dbdd42;
+    border-radius: 40px;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 10px 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s, border 0.2s;
+}
+button i {
+    font-size: 1.5rem;
+}
+
+button:hover {
+    border: 1px solid #fff0;
+    background: var(--gold);
+}

@@ -15,6 +15,14 @@ let beadGap = 0;
 let beadRowMaxWidth = 0;
 let leftButtons = [];
 let rightButtons = [];
+let pointsText;
+let totalPoints = 0;
+let pointsAchieved = 0;
+let wordContainer;
+let progressBar;
+let foundWordsWrapper;
+let foundWordsButton;
+
 let gameWeights = {
 	maxPerRow: 7,
 	visible: 5,
@@ -22,6 +30,9 @@ let gameWeights = {
 	fourLetterTop: 1,
 	fourLetterBottom: 1,
 	fourLetterMostUnique: 2,
+	pointsFromFiveLetter: 5,
+	pointsFromFourLetter: 3,
+	pointsFromThreeLetter: 1,
 };
 let allFoundWords = [];
 let animatingCorrectWords = false;
@@ -306,26 +317,36 @@ function generateRows() {
 	console.log("Four letter words: " + totalFourLetterWords);
 	console.log("Three letter words: " + totalThreeLetterWords);
 
+	totalPoints = totalFiveLetterWords * gameWeights.pointsFromFiveLetter + totalFourLetterWords * gameWeights.pointsFromFourLetter + totalThreeLetterWords * gameWeights.pointsFromThreeLetter;
+
+
 	console.log(correctWords);
 	letters.forEach((e) => {
 		console.log(e.join(""));
 	});
 }
+const root = document.documentElement;
 
 function init() {
 	console.log("generating");
 	generateRows();
 	console.log("generated");
-	const root = document.documentElement;
 	const styles = getComputedStyle(root);
 	beadWidth = parseInt(styles.getPropertyValue("--bead-size"));
 	beadGap = parseInt(styles.getPropertyValue("--bead-horizontal-gap"));
 	beadRowMaxWidth =
 		beadWidth * gameWeights.maxPerRow + beadGap * gameWeights.maxPerRow;
-	console.log(beadRowMaxWidth);
 	let rowFadeWrapper = document.getElementById("row-fade-wrapper");
 	let leftButtonWrapper = document.getElementById("left-buttons");
 	let rightButtonWrapper = document.getElementById("right-buttons");
+	pointsText = document.getElementById("points-text");
+	pointsText.innerHTML = `${pointsAchieved}/${totalPoints} pts`;
+	progressBar = document.getElementById("progress-bar");
+	progressBar.style.width = `${(pointsAchieved / totalPoints) * 100}%`;
+	window.addEventListener("resize", onResize);
+	wordContainer = document.getElementById("word-container");
+	foundWordsWrapper = document.getElementById("found-words");
+	foundWordsButton = document.getElementById("found-words-button");
 
 	for (let i = 0; i < rows; i++) {
 		let leftButton = document.createElement("button");
@@ -352,15 +373,15 @@ function init() {
 		row.id = "row-" + (i + 1);
 		wrapper.appendChild(row);
 
-		wrapper.onpointerdown = function (e) {
+		wrapper.addEventListener("pointerdown", function (e) {
 			onPointerDown(e, i);
-		};
+		}, {passive: false});
 		document.addEventListener("pointerup", function (e) {
 			onPointerUp(e, i);
-		});
+		}, {passive: false});
 		document.addEventListener("pointermove", function (e) {
 			onPointerMove(e, i);
-		});
+		}, {passive: false});
 
 		rowEls.push(row);
 		rowWrapperEls.push(wrapper);
@@ -386,6 +407,7 @@ init();
 let prevMousePositionX = 0;
 
 function onPointerDown(e, i) {
+	e.preventDefault();
 	if (animatingCorrectWords) return;
 	pointersActive[i] = true;
 	prevMousePositionX = e.clientX;
@@ -393,6 +415,7 @@ function onPointerDown(e, i) {
 }
 
 function onPointerUp(e, i) {
+	e.preventDefault();
 	pointersActive[i] = false;
 	if (!rowChanged[i]) return;
 	rowChanged[i] = false;
@@ -406,6 +429,7 @@ function onPointerUp(e, i) {
 
 function onPointerMove(e, i) {
 	if (!pointersActive[i]) return;
+	e.preventDefault();
 	rowPositions[i] += e.clientX - prevMousePositionX;
 	if (rowPositions[i] > beadRowMaxWidth / 2) {
 		rowPositions[i] -= beadRowMaxWidth;
@@ -542,6 +566,19 @@ function postCorrectnessCheck(locations) {
 	let totalDuration = 0;
 	locations.forEach((e, i) => {
 		setTimeout(() => {
+			switch(e.length) {
+				case 5: 
+					pointsAchieved += gameWeights.pointsFromFiveLetter;
+					break;
+				case 4:
+					pointsAchieved += gameWeights.pointsFromFourLetter;
+					break;
+				case 3:
+					pointsAchieved += gameWeights.pointsFromThreeLetter;
+					break;
+			}
+			pointsText.innerHTML = `${pointsAchieved}/${totalPoints} pts`;
+			progressBar.style.width = `${(pointsAchieved / totalPoints) * 100}%`;
 			startCorrectWordAnimation(e)
 		}, totalDuration + (i * (wordSeparation + wordHangDuration)));
 		totalDuration += ((e.length - 1) *  letterOffset) + letterDuration;
@@ -557,7 +594,19 @@ function startCorrectWordAnimation(location) {
 	let row = location.row;
 	let col = location.col;
 	let length = location.length;
-	
+	wordContainer.innerHTML = "";
+	let wordEl = document.createElement("div");
+	wordEl.classList.add("correct-word");
+	wordEl.innerHTML = location.word;
+	wordContainer.appendChild(wordEl);
+	let ptsEl = document.createElement("div");
+	ptsEl.classList.add("awarded-points");
+	ptsEl.innerHTML = `+${length === 5 ? gameWeights.pointsFromFiveLetter : length === 4 ? gameWeights.pointsFromFourLetter : gameWeights.pointsFromThreeLetter}pts`;
+	wordContainer.appendChild(ptsEl);
+	let foundWord = document.createElement("p");
+	foundWord.innerText = location.word;
+	foundWordsWrapper.appendChild(foundWord);
+
 	for(let i = 0; i < length; i++) {
 		let c = col + 1 + rowOffsets[row + i];
 		if(c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
@@ -570,6 +619,8 @@ function startCorrectWordAnimation(location) {
 		}
 	}
 	setTimeout(() => {
+		wordEl.classList.add("fade-out");
+		ptsEl.classList.add("fade-out");
 		for(let i = 0; i < length; i++) {
 			let c = col + 1 + rowOffsets[row + i];
 			if(c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
@@ -585,20 +636,50 @@ function startCorrectWordAnimation(location) {
 
 function shuffleRows() {
 	if(animatingCorrectWords) return;
-	for(let i = 0; i < rows; i++) {
-		shuffle(letters[i]);
+	animatingCorrectWords = true;
 
-		rowOffsets[i] = 0;
-		rowTargetPositions[i] = 0;
-		rowPositions[i] = 0;
-		rowEls[i].style.transform = `translateX(${0}px)`;
+
+	for(let i = 0; i < rows; i++) {
 
 		for(let j = 0; j < gameWeights.maxPerRow; j++) {
 			for(let k = 0; k < 3; k++) {
-				letterElementsPerRow[i][j][k].innerHTML = letters[i][j];
+				letterElementsPerRow[i][j][k].style.transitionDelay = `${Math.random() * 200}ms`;
+				letterElementsPerRow[i][j][k].classList.add("letter-hide-letter");
 			}
 		}
 	}
+	setTimeout(() => {
+		for(let i = 0; i < rows; i++) {
+			shuffle(letters[i]);
+	
+			rowOffsets[i] = 0;
+			rowTargetPositions[i] = 0;
+			rowPositions[i] = 0;
+			rowEls[i].style.transform = `translateX(${0}px)`;
+			for(let j = 0; j < gameWeights.maxPerRow; j++) {
+				for(let k = 0; k < 3; k++) {
+					letterElementsPerRow[i][j][k].classList.remove("letter-hide-letter");
+					letterElementsPerRow[i][j][k].innerHTML = letters[i][j];
+				}
+			}
+		}
+		setTimeout(() => {
+			for(let i = 0; i < rows; i++) {
+				for(let j = 0; j < gameWeights.maxPerRow; j++) {
+					for(let k = 0; k < 3; k++) {
+						letterElementsPerRow[i][j][k].style.transitionDelay = "0ms";
+					}
+				}
+			}
+			animatingCorrectWords = false;
+		}, 400);
+	}, 400);
+	
+}
+function toggleViewFoundWords() {
+
+	foundWordsWrapper.classList.toggle("visible");
+	foundWordsButton.classList.toggle("active");
 }
 
 
@@ -628,5 +709,18 @@ function shuffle(array) {
 			array[randomIndex],
 			array[currentIndex],
 		];
+	}
+}
+
+function onResize() {
+	const styles = getComputedStyle(root);
+	beadWidth = parseInt(styles.getPropertyValue("--bead-size"));
+	beadGap = parseInt(styles.getPropertyValue("--bead-horizontal-gap"));
+	beadRowMaxWidth =
+		beadWidth * gameWeights.maxPerRow + beadGap * gameWeights.maxPerRow;
+
+	for (let i = 0; i < rows; i++) {
+		rowPositions[i] = rowTargetPositions[i] = rowOffsets[i] * (beadWidth + beadGap) * -1;
+		rowEls[i].style.transform = `translateX(${rowTargetPositions[i]}px)`;
 	}
 }

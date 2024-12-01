@@ -14,6 +14,27 @@
 
 <body>
     <div class="game-wrapper">
+        <h1>Spelling Beads</h1>
+        <div class="points-bar">
+            <div class="points" id="points-text">10000pts</div>
+            <div class="bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+        </div>
+        <div class="word-container" id="word-container">
+        </div>
+        <div class="game-and-words">
+            <div class="content">
+                <div id="left-buttons">
+                </div>
+                <div id="row-fade-wrapper">
+                </div>
+                <div id="right-buttons">
+                </div>
+            </div>
+            <div class="found-words" id="found-words">
+            </div>
+        </div>
         <div class="content">
             <div id="left-buttons">
             </div>
@@ -22,7 +43,10 @@
             <div id="right-buttons">
             </div>
         </div>
-        <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
+        <div class="flex-hor">
+            <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
+            <button onclick="toggleViewFoundWords()" id="found-words-button"><span>View Found Words</span></button>
+        </div>
     </div>
 </body>
 

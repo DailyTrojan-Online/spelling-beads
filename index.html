@@ -4,8 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Beads</title>
+    <title>Daily Trojan Games - Spelling Beads</title>
+    <link rel="icon" href="../imgs/spelling_beads.png" type="image/x-icon">
+    <link rel="stylesheet" href="./dailytrojan-lib/gameStyles.css">
     <link rel="stylesheet" href="./styles/styles.css">
+    <script src="./dailytrojan-lib/gameCore.js" defer></script>
     <script src="./scripts/words.js" defer></script>
     <script src="./scripts/main.js" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
@@ -13,17 +16,44 @@
 </head>
 
 <body>
-    <div class="game-wrapper">
+
+    <header>
+        <img id="dt-logo" src="../imgs/dt-logo.png" height="50" width=auto style="cursor: pointer;"
+            onclick="homeRedirect()" alt="Daily Trojan Logo" />
+    </header>
+    <div class="game-splash-wrapper -game-splash-hidden" id="splash">
+        <img width="80" src="../imgs/spelling_beads.svg" />
         <h1>Spelling Beads</h1>
-        <div class="points-bar">
-            <div class="points" id="points-text">10000pts</div>
-            <div class="bar">
-                <div class="progress" id="progress-bar"></div>
+        <h2>Guess the song played by the USC Marching band</h2>
+        <div class="flex-hor">
+            <button onclick="back()">Back</button>
+            <button onclick="startGame()">Play</button>
+        </div>
+        <p id="splash-date">date</p>
+    </div>
+    <main>
+        <div class="game-wrapper">
+            <h1>Spelling Beads</h1>
+            <div class="points-bar">
+                <div class="points" id="points-text"></div>
+                <div class="bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
             </div>
-        </div>
-        <div class="word-container" id="word-container">
-        </div>
-        <div class="game-and-words">
+            <div class="word-container" id="word-container">
+            </div>
+            <div class="game-and-words">
+                <div class="content">
+                    <div id="left-buttons">
+                    </div>
+                    <div id="row-fade-wrapper">
+                    </div>
+                    <div id="right-buttons">
+                    </div>
+                </div>
+                <div class="found-words" id="found-words">
+                </div>
+            </div>
             <div class="content">
                 <div id="left-buttons">
                 </div>
@@ -32,22 +62,12 @@
                 <div id="right-buttons">
                 </div>
             </div>
-            <div class="found-words" id="found-words">
+            <div class="flex-hor">
+                <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
+                <button onclick="toggleViewFoundWords()" id="found-words-button"><span>View Found Words</span></button>
             </div>
         </div>
-        <div class="content">
-            <div id="left-buttons">
-            </div>
-            <div id="row-fade-wrapper">
-            </div>
-            <div id="right-buttons">
-            </div>
-        </div>
-        <div class="flex-hor">
-            <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
-            <button onclick="toggleViewFoundWords()" id="found-words-button"><span>View Found Words</span></button>
-        </div>
-    </div>
+    </main>
 </body>
 
 </html>

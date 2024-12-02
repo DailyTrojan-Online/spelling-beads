@@ -317,8 +317,10 @@ function generateRows() {
 	console.log("Four letter words: " + totalFourLetterWords);
 	console.log("Three letter words: " + totalThreeLetterWords);
 
-	totalPoints = totalFiveLetterWords * gameWeights.pointsFromFiveLetter + totalFourLetterWords * gameWeights.pointsFromFourLetter + totalThreeLetterWords * gameWeights.pointsFromThreeLetter;
-
+	totalPoints =
+		totalFiveLetterWords * gameWeights.pointsFromFiveLetter +
+		totalFourLetterWords * gameWeights.pointsFromFourLetter +
+		totalThreeLetterWords * gameWeights.pointsFromThreeLetter;
 
 	console.log(correctWords);
 	letters.forEach((e) => {
@@ -328,6 +330,9 @@ function generateRows() {
 const root = document.documentElement;
 
 function init() {
+	gameSplash = document.getElementById("splash");
+	splashDate = document.getElementById("splash-date");
+	window.DTGCore = new DTGameCore(gameSplash, splashDate);
 	console.log("generating");
 	generateRows();
 	console.log("generated");
@@ -354,14 +359,14 @@ function init() {
 		leftButtonWrapper.appendChild(leftButton);
 		leftButton.onclick = function () {
 			incrementRow(i, -1);
-		}
+		};
 		leftButtons.push(leftButton);
 		let rightButton = document.createElement("button");
 		rightButton.innerHTML = `<i class="ti ti-chevron-right"></i>`;
 		rightButtonWrapper.appendChild(rightButton);
 		rightButton.onclick = function () {
 			incrementRow(i, 1);
-		}
+		};
 		rightButtons.push(rightButton);
 
 		let wrapper = document.createElement("div");
@@ -373,20 +378,32 @@ function init() {
 		row.id = "row-" + (i + 1);
 		wrapper.appendChild(row);
 
-		wrapper.addEventListener("pointerdown", function (e) {
-			onPointerDown(e, i);
-		}, {passive: false});
-		document.addEventListener("pointerup", function (e) {
-			onPointerUp(e, i);
-		}, {passive: false});
-		document.addEventListener("pointermove", function (e) {
-			onPointerMove(e, i);
-		}, {passive: false});
+		wrapper.addEventListener(
+			"pointerdown",
+			function (e) {
+				onPointerDown(e, i);
+			},
+			{ passive: false }
+		);
+		document.addEventListener(
+			"pointerup",
+			function (e) {
+				onPointerUp(e, i);
+			},
+			{ passive: false }
+		);
+		document.addEventListener(
+			"pointermove",
+			function (e) {
+				onPointerMove(e, i);
+			},
+			{ passive: false }
+		);
 
 		rowEls.push(row);
 		rowWrapperEls.push(wrapper);
 		letterElementsPerRow[i] = new Array(gameWeights.maxPerRow);
-		for(let j = 0; j < gameWeights.maxPerRow; j++) {
+		for (let j = 0; j < gameWeights.maxPerRow; j++) {
 			letterElementsPerRow[i][j] = new Array(3);
 		}
 		for (let c = 0; c < 3; c++) {
@@ -401,8 +418,6 @@ function init() {
 		}
 	}
 }
-
-init();
 
 let prevMousePositionX = 0;
 
@@ -443,17 +458,17 @@ function onPointerMove(e, i) {
 }
 
 function incrementRow(i, c) {
-	if(animatingCorrectWords) return;
-	rowOffsets[i]-= c;
+	if (animatingCorrectWords) return;
+	rowOffsets[i] -= c;
 	rowTargetPositions[i] = rowOffsets[i] * (beadWidth + beadGap) * -1;
 
-	if(rowOffsets[i] > gameWeights.maxPerRow / 2) {
+	if (rowOffsets[i] > gameWeights.maxPerRow / 2) {
 		rowOffsets[i] -= gameWeights.maxPerRow;
 	}
-	if(rowOffsets[i] < -gameWeights.maxPerRow / 2) {
+	if (rowOffsets[i] < -gameWeights.maxPerRow / 2) {
 		rowOffsets[i] += gameWeights.maxPerRow;
 	}
-	
+
 	if (rowTargetPositions[i] > beadRowMaxWidth / 2) {
 		rowPositions[i] -= beadRowMaxWidth;
 		rowTargetPositions[i] -= beadRowMaxWidth;
@@ -488,15 +503,15 @@ function beginPositionLerp(i) {
 function calculateWins() {
 	let visibleLetters = new Array(rows);
 	let spacesAlreadyChecked = new Array(rows);
-	for(let i = 0; i < rows; i++) {
+	for (let i = 0; i < rows; i++) {
 		spacesAlreadyChecked[i] = new Array(gameWeights.maxPerRow).fill(false);
 	}
 
-	for(let r = 0; r < rows; r++) {
-		for(let i = rowOffsets[r]; i < rowOffsets[r] + gameWeights.visible; i++) {
-			let idx = i + ((gameWeights.maxPerRow - gameWeights.visible) / 2);  
-			if(idx < 0) idx += gameWeights.maxPerRow;
-			if(idx >= gameWeights.maxPerRow) idx -= gameWeights.maxPerRow;
+	for (let r = 0; r < rows; r++) {
+		for (let i = rowOffsets[r]; i < rowOffsets[r] + gameWeights.visible; i++) {
+			let idx = i + (gameWeights.maxPerRow - gameWeights.visible) / 2;
+			if (idx < 0) idx += gameWeights.maxPerRow;
+			if (idx >= gameWeights.maxPerRow) idx -= gameWeights.maxPerRow;
 			visibleLetters[r] = visibleLetters[r] || [];
 			visibleLetters[r].push(letters[r][idx]);
 		}
@@ -505,42 +520,67 @@ function calculateWins() {
 	let correctWordsFound = [];
 	let correctWordLocations = [];
 	//first, five letters are easiest
-	for(let i = 0; i < gameWeights.visible; i++) {
-		let word = visibleLetters[0][i] + visibleLetters[1][i] + visibleLetters[2][i] + visibleLetters[3][i] + visibleLetters[4][i];
-		if(correctWords.includes(word) && !allFoundWords.includes(word)) {
+	for (let i = 0; i < gameWeights.visible; i++) {
+		let word =
+			visibleLetters[0][i] +
+			visibleLetters[1][i] +
+			visibleLetters[2][i] +
+			visibleLetters[3][i] +
+			visibleLetters[4][i];
+		if (correctWords.includes(word) && !allFoundWords.includes(word)) {
 			spacesAlreadyChecked[0][i] = true;
 			spacesAlreadyChecked[1][i] = true;
 			spacesAlreadyChecked[2][i] = true;
 			spacesAlreadyChecked[3][i] = true;
 			spacesAlreadyChecked[4][i] = true;
 			correctWordsFound.push(word);
-			correctWordLocations.push({word, row: 0, col: i, length: 5});
+			correctWordLocations.push({ word, row: 0, col: i, length: 5 });
 		}
 	}
 	//now, four letters
-	for(let r = 0; r < 2; r++) {
-		for(let i = 0; i < gameWeights.visible; i++) {
-			let word = visibleLetters[r][i] + visibleLetters[r + 1][i] + visibleLetters[r + 2][i] + visibleLetters[r + 3][i];
+	for (let r = 0; r < 2; r++) {
+		for (let i = 0; i < gameWeights.visible; i++) {
+			let word =
+				visibleLetters[r][i] +
+				visibleLetters[r + 1][i] +
+				visibleLetters[r + 2][i] +
+				visibleLetters[r + 3][i];
 			//because we can have four letter words which are "sub" words of a five letter word, such as bake and baker, we need to make sure that at least one of the spaces hasnt already been checked as won
-			if(correctWords.includes(word) && !allFoundWords.includes(word) && !spacesAlreadyChecked[r][i] && !spacesAlreadyChecked[r + 1][i] && !spacesAlreadyChecked[r + 2][i] && !spacesAlreadyChecked[r + 3][i]) {
+			if (
+				correctWords.includes(word) &&
+				!allFoundWords.includes(word) &&
+				!spacesAlreadyChecked[r][i] &&
+				!spacesAlreadyChecked[r + 1][i] &&
+				!spacesAlreadyChecked[r + 2][i] &&
+				!spacesAlreadyChecked[r + 3][i]
+			) {
 				spacesAlreadyChecked[r][i] = true;
 				spacesAlreadyChecked[r + 1][i] = true;
 				spacesAlreadyChecked[r + 2][i] = true;
 				spacesAlreadyChecked[r + 3][i] = true;
 
 				correctWordsFound.push(word);
-				correctWordLocations.push({word, row: r, col: i, length: 4});
+				correctWordLocations.push({ word, row: r, col: i, length: 4 });
 			}
 		}
 	}
 	//now, three letters
-	for(let r = 0; r < 3; r++) {
-		for(let i = 0; i < gameWeights.visible; i++) {
-			let word = visibleLetters[r][i] + visibleLetters[r + 1][i] + visibleLetters[r + 2][i];
+	for (let r = 0; r < 3; r++) {
+		for (let i = 0; i < gameWeights.visible; i++) {
+			let word =
+				visibleLetters[r][i] +
+				visibleLetters[r + 1][i] +
+				visibleLetters[r + 2][i];
 			//because a three letter word can be a sub of a four or five letter word, BUT can still be a unique word (consider flage is a column, where flag and age are two valid words), we need to see if at the very least one of the spaces has not been already checked
-			if(correctWords.includes(word) && !allFoundWords.includes(word) && (!spacesAlreadyChecked[r][i] || !spacesAlreadyChecked[r + 1][i] || !spacesAlreadyChecked[r + 2][i])) {
+			if (
+				correctWords.includes(word) &&
+				!allFoundWords.includes(word) &&
+				(!spacesAlreadyChecked[r][i] ||
+					!spacesAlreadyChecked[r + 1][i] ||
+					!spacesAlreadyChecked[r + 2][i])
+			) {
 				correctWordsFound.push(word);
-				correctWordLocations.push({word, row: r, col: i, length: 3});
+				correctWordLocations.push({ word, row: r, col: i, length: 3 });
 			}
 		}
 	}
@@ -551,7 +591,7 @@ function calculateWins() {
 	console.log(correctWordsFound);
 	console.log(correctWordLocations);
 
-	postCorrectnessCheck(correctWordLocations)
+	postCorrectnessCheck(correctWordLocations);
 }
 let letterDuration = 200; //mseconds, needs to be the same as the animation in css
 let letterOffset = 100; //mseconds
@@ -559,15 +599,15 @@ let wordHangDuration = 1000; //mseconds
 let wordSeparation = 500; //mseconds
 
 function postCorrectnessCheck(locations) {
-	if(locations.length === 0) return;
+	if (locations.length === 0) return;
 	animatingCorrectWords = true;
-	leftButtons.forEach(e => e.disabled = true);
-	rightButtons.forEach(e => e.disabled = true);
+	leftButtons.forEach((e) => (e.disabled = true));
+	rightButtons.forEach((e) => (e.disabled = true));
 	let totalDuration = 0;
 	locations.forEach((e, i) => {
 		setTimeout(() => {
-			switch(e.length) {
-				case 5: 
+			switch (e.length) {
+				case 5:
 					pointsAchieved += gameWeights.pointsFromFiveLetter;
 					break;
 				case 4:
@@ -579,15 +619,15 @@ function postCorrectnessCheck(locations) {
 			}
 			pointsText.innerHTML = `${pointsAchieved}/${totalPoints} pts`;
 			progressBar.style.width = `${(pointsAchieved / totalPoints) * 100}%`;
-			startCorrectWordAnimation(e)
-		}, totalDuration + (i * (wordSeparation + wordHangDuration)));
-		totalDuration += ((e.length - 1) *  letterOffset) + letterDuration;
-	})
+			startCorrectWordAnimation(e);
+		}, totalDuration + i * (wordSeparation + wordHangDuration));
+		totalDuration += (e.length - 1) * letterOffset + letterDuration;
+	});
 	setTimeout(() => {
 		animatingCorrectWords = false;
-		leftButtons.forEach(e => e.disabled = false);
-		rightButtons.forEach(e => e.disabled = false);
-	}, totalDuration + ((wordHangDuration + wordSeparation) * locations.length));
+		leftButtons.forEach((e) => (e.disabled = false));
+		rightButtons.forEach((e) => (e.disabled = false));
+	}, totalDuration + (wordHangDuration + wordSeparation) * locations.length);
 }
 
 function startCorrectWordAnimation(location) {
@@ -601,17 +641,23 @@ function startCorrectWordAnimation(location) {
 	wordContainer.appendChild(wordEl);
 	let ptsEl = document.createElement("div");
 	ptsEl.classList.add("awarded-points");
-	ptsEl.innerHTML = `+${length === 5 ? gameWeights.pointsFromFiveLetter : length === 4 ? gameWeights.pointsFromFourLetter : gameWeights.pointsFromThreeLetter}pts`;
+	ptsEl.innerHTML = `+${
+		length === 5
+			? gameWeights.pointsFromFiveLetter
+			: length === 4
+			? gameWeights.pointsFromFourLetter
+			: gameWeights.pointsFromThreeLetter
+	}pts`;
 	wordContainer.appendChild(ptsEl);
 	let foundWord = document.createElement("p");
 	foundWord.innerText = location.word;
 	foundWordsWrapper.appendChild(foundWord);
 
-	for(let i = 0; i < length; i++) {
+	for (let i = 0; i < length; i++) {
 		let c = col + 1 + rowOffsets[row + i];
-		if(c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
-		if(c < 0) c += gameWeights.maxPerRow;
-		for(let j = 0; j < 3; j++) {
+		if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
+		if (c < 0) c += gameWeights.maxPerRow;
+		for (let j = 0; j < 3; j++) {
 			let letter = letterElementsPerRow[row + i][c][j];
 			// letter.style.animation = `letter-correct ${letterDuration}ms ease-in-out ${i * letterOffset}ms 1 forwards`;
 			letter.classList.add("letter-correct");
@@ -621,52 +667,52 @@ function startCorrectWordAnimation(location) {
 	setTimeout(() => {
 		wordEl.classList.add("fade-out");
 		ptsEl.classList.add("fade-out");
-		for(let i = 0; i < length; i++) {
+		for (let i = 0; i < length; i++) {
 			let c = col + 1 + rowOffsets[row + i];
-			if(c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
-			if(c < 0) c += gameWeights.maxPerRow;
-			for(let j = 0; j < 3; j++) {
+			if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
+			if (c < 0) c += gameWeights.maxPerRow;
+			for (let j = 0; j < 3; j++) {
 				let letter = letterElementsPerRow[row + i][c][j];
 				letter.style.transitionDelay = `0ms`;
 				letter.classList.remove("letter-correct");
 			}
 		}
-	}, ((length - 1) *  letterOffset) + letterDuration + wordHangDuration);
+	}, (length - 1) * letterOffset + letterDuration + wordHangDuration);
 }
 
 function shuffleRows() {
-	if(animatingCorrectWords) return;
+	if (animatingCorrectWords) return;
 	animatingCorrectWords = true;
 
-
-	for(let i = 0; i < rows; i++) {
-
-		for(let j = 0; j < gameWeights.maxPerRow; j++) {
-			for(let k = 0; k < 3; k++) {
-				letterElementsPerRow[i][j][k].style.transitionDelay = `${Math.random() * 200}ms`;
+	for (let i = 0; i < rows; i++) {
+		for (let j = 0; j < gameWeights.maxPerRow; j++) {
+			for (let k = 0; k < 3; k++) {
+				letterElementsPerRow[i][j][k].style.transitionDelay = `${
+					Math.random() * 200
+				}ms`;
 				letterElementsPerRow[i][j][k].classList.add("letter-hide-letter");
 			}
 		}
 	}
 	setTimeout(() => {
-		for(let i = 0; i < rows; i++) {
+		for (let i = 0; i < rows; i++) {
 			shuffle(letters[i]);
-	
+
 			rowOffsets[i] = 0;
 			rowTargetPositions[i] = 0;
 			rowPositions[i] = 0;
 			rowEls[i].style.transform = `translateX(${0}px)`;
-			for(let j = 0; j < gameWeights.maxPerRow; j++) {
-				for(let k = 0; k < 3; k++) {
+			for (let j = 0; j < gameWeights.maxPerRow; j++) {
+				for (let k = 0; k < 3; k++) {
 					letterElementsPerRow[i][j][k].classList.remove("letter-hide-letter");
 					letterElementsPerRow[i][j][k].innerHTML = letters[i][j];
 				}
 			}
 		}
 		setTimeout(() => {
-			for(let i = 0; i < rows; i++) {
-				for(let j = 0; j < gameWeights.maxPerRow; j++) {
-					for(let k = 0; k < 3; k++) {
+			for (let i = 0; i < rows; i++) {
+				for (let j = 0; j < gameWeights.maxPerRow; j++) {
+					for (let k = 0; k < 3; k++) {
 						letterElementsPerRow[i][j][k].style.transitionDelay = "0ms";
 					}
 				}
@@ -674,15 +720,11 @@ function shuffleRows() {
 			animatingCorrectWords = false;
 		}, 400);
 	}, 400);
-	
 }
 function toggleViewFoundWords() {
-
 	foundWordsWrapper.classList.toggle("visible");
 	foundWordsButton.classList.toggle("active");
 }
-
-
 
 function easeInOutQuad(t, b, c, d) {
 	t /= d / 2;
@@ -720,7 +762,13 @@ function onResize() {
 		beadWidth * gameWeights.maxPerRow + beadGap * gameWeights.maxPerRow;
 
 	for (let i = 0; i < rows; i++) {
-		rowPositions[i] = rowTargetPositions[i] = rowOffsets[i] * (beadWidth + beadGap) * -1;
+		rowPositions[i] = rowTargetPositions[i] =
+			rowOffsets[i] * (beadWidth + beadGap) * -1;
 		rowEls[i].style.transform = `translateX(${rowTargetPositions[i]}px)`;
 	}
 }
+
+function startGame() {
+	DTGCore.hideSplashScreen();
+}
+init();

@@ -1,8 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
-
 :root {
-    --cardinal: #990000;
-    --gold: #FFCC00;
     --bead-color: #d9dbdd;
     --bead-size: 50px;
     --bead-horizontal-gap: 10px;
@@ -32,29 +28,6 @@
     }
 }
 
-body,
-html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5 {
-    font-family: 'Source Serif 4', sans-serif;
-}
-
-.flex-hor {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
 
 .points-bar {
     display: flex;
@@ -62,7 +35,7 @@ h5 {
     align-items: center;
     width: 100%;
     gap: 10px;
-    font-family: "nunito", sans-serif;
+    font-family: "Geist Mono", monospace;
 }
 .points-bar .points {
     flex-shrink: 0;
@@ -71,8 +44,8 @@ h5 {
 .points-bar .bar {
     width: 100%;
     height: 20px;
-    border: 1px solid #d9dbdd;
-    background: #d9dbdd42;
+    border: 1px solid var(--outline);
+    background: var(--raised-surface);
     overflow: hidden;
     border-radius: 500px;
 }
@@ -127,16 +100,15 @@ h5 {
     }
 }
 
+
 .game-wrapper {
-    width: calc(100vw - 80px);
-    max-width: 500px;
-    margin: auto;
-    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: start;
     align-items: center;
-    margin-top: 40px;
+    box-sizing: border-box;
 }
 
 .game-and-words {
@@ -153,8 +125,8 @@ h5 {
 }
 .found-words {
     position: absolute;
-    background: #f5f6f6;
-    border: 1px solid #d9dbdd;
+    background: var(--raised-surface);
+    border: 1px solid var(--outline);
     border-radius: 10px;
     top:0;  
     display: flex;
@@ -272,7 +244,7 @@ h5 {
 
 .letter {
     flex-shrink: 0;
-    background: #d9dbdd;
+    background: var(--outline);
     border-radius: 100%;
     width: var(--bead-size);
     height: var(--bead-size);
@@ -280,7 +252,6 @@ h5 {
     justify-content: center;
     align-items: center;
     text-transform: capitalize;
-    font-family: sans-serif;
     font-size: var(--bead-letter-size);
     font-weight: 800;
     transform: scale(1);
@@ -301,7 +272,7 @@ h5 {
 @keyframes letter-correct {
     0% {
         transform: scale(1);
-        background: #d9dbdd;
+        background: var(--outline);
     }
 
     100% {
@@ -310,31 +281,6 @@ h5 {
     }
 }
 
-button {
-    border: none;
-    background: transparent;
-    box-sizing: border-box;
-    border: 1px solid #d9dbdd;
-    background: #d9dbdd42;
-    border-radius: 40px;
-    font-size: 16px;
-    cursor: pointer;
-    flex-shrink: 0;
-    padding: 10px 15px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    transition: background 0.2s, border 0.2s;
-    color: black;
-    height: 45px;
-}
-
-button i {
-    font-size: 1.5rem;
-}
-
-button:hover, button.active {
-    border: 1px solid #fff0;
-    background: var(--gold);
+.game-splash-wrapper {
+    background: var(--gold)
 }

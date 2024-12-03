@@ -28,17 +28,28 @@
     }
 }
 
+.spread {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
 
 .points-bar {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     gap: 10px;
+    margin-top: -20px;
     font-family: "Geist Mono", monospace;
 }
-.points-bar .points {
+.points-bar .points, .points-bar .elapsed{
     flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
 }
 
 .points-bar .bar {

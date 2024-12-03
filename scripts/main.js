@@ -52,7 +52,7 @@ function generateRows() {
 	correctWords = [];
 
 	for (let i = 0; i < gameWeights.fiveLetter; i++) {
-		let word = randomInArray(fiveLetter);
+		let word = DTGCore.randomArrayElement(fiveLetter);
 		if (correctWords.includes(word)) {
 			i--;
 			continue;
@@ -75,7 +75,7 @@ function generateRows() {
 	let fourLetterWordsList = [];
 	let maxIteratedFourLetterWords = 40;
 	for (let i = 0; i < maxIteratedFourLetterWords; i++) {
-		let word = randomInArray(fourLetter);
+		let word = DTGCore.randomArrayElement(fourLetter);
 		if (iteratedUponFourLetterWords.includes(word)) {
 			i--;
 			continue;
@@ -194,7 +194,7 @@ function generateRows() {
 		actualIterations++;
 		if (actualIterations > maxIterations) break;
 		let actualRowIndex = Math.min(rowIndicesByCapacity[0], 2); // because we only have 5 rows, and the words are 3 letters long, prevents overflow
-		let word = randomInArray(threeLetter);
+		let word = DTGCore.randomArrayElement(threeLetter);
 		if (iteratedUponThreeLetterWords.includes(word)) {
 			i--;
 			continue;
@@ -236,7 +236,7 @@ function generateRows() {
 	}
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < capacity[i]; j++) {
-			let letter = randomInArray("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+			let letter = DTGCore.randomArrayElement("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 			if (letters[i].includes(letter)) {
 				j--;
 				continue;
@@ -733,17 +733,13 @@ function easeInOutQuad(t, b, c, d) {
 	return (-c / 2) * (t * (t - 2) - 1) + b;
 }
 
-function randomInArray(array) {
-	return array[Math.floor(Math.random() * array.length)];
-}
-
 function shuffle(array) {
 	let currentIndex = array.length;
 
 	// While there remain elements to shuffle...
 	while (currentIndex != 0) {
 		// Pick a remaining element...
-		let randomIndex = Math.floor(Math.random() * currentIndex);
+		let randomIndex = Math.floor(DTGCore.randomFloat() * currentIndex);
 		currentIndex--;
 
 		// And swap it with the current element.
@@ -767,8 +763,32 @@ function onResize() {
 		rowEls[i].style.transform = `translateX(${rowTargetPositions[i]}px)`;
 	}
 }
+let timerText;
+let timerInterval;
+let timerValue = 0; //in seconds
+function startTimer() {
+	timerText = document.getElementById("elapsed-text");
+	incrementTimer();
+}
+function incrementTimer() {
+	timerValue += 1;
+	let minutes = Math.floor(timerValue / 60);
+	let seconds = timerValue % 60;
+	let minutesString = minutes < 10 ? "0" + minutes : minutes;
+	let secondsString = seconds < 10 ? "0" + seconds : seconds;
+	timerText.innerText = `${minutesString}:${secondsString}`;
+
+	setTimeout(() => {
+		incrementTimer();
+	}, 1000);
+}
 
 function startGame() {
 	DTGCore.hideSplashScreen();
+	setTimeout(() => {
+		startTimer();
+	}, 500);
 }
+
+
 init();

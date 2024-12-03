@@ -22,10 +22,10 @@
         <img id="dt-logo" src="./imgs/dt-logo.png" height="50" width=auto style="cursor: pointer;"
             onclick="homeRedirect()" alt="Daily Trojan Logo" />
     </header>
-    <div class="game-splash-wrapper -game-splash-hidden" id="splash">
+    <div class="game-splash-wrapper" id="splash">
         <img width="80" src="./imgs/spelling_beads.svg" />
         <h1>Spelling Beads</h1>
-        <h2>Guess the song played by the USC Marching band</h2>
+        <h2>Find as many words as you can, as fast as you can</h2>
         <div class="flex-hor">
             <button onclick="back()">Back</button>
             <button onclick="startGame()">Play</button>
@@ -36,7 +36,10 @@
         <div class="game-wrapper">
             <h1>Spelling Beads</h1>
             <div class="points-bar">
-                <div class="points" id="points-text"></div>
+                <div class="spread">
+                    <div class="points"><i class="ti ti-star-filled"></i><span id="points-text"></span></div>
+                    <div class="elapsed"><span id="elapsed-text">00:00</span><i class="ti ti-hourglass"></i></div>
+                </div>
                 <div class="bar">
                     <div class="progress" id="progress-bar"></div>
                 </div>

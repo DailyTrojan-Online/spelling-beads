@@ -22,7 +22,7 @@
         <img id="dt-logo" src="./imgs/dt-logo.png" height="50" width=auto style="cursor: pointer;"
             onclick="homeRedirect()" alt="Daily Trojan Logo" />
     </header>
-    <div class="game-splash-wrapper" id="splash">
+    <div class="game-splash-wrapper game-splash-hidden" id="splash">
         <img width="80" src="./imgs/spelling_beads.svg" />
         <h1>Spelling Beads</h1>
         <h2>Find as many words as you can, as fast as you can</h2>
@@ -36,15 +36,15 @@
         <div class="game-wrapper">
             <h1>Spelling Beads</h1>
             <div class="points-bar">
-                <div class="spread">
-                    <div class="points"><i class="ti ti-star-filled"></i><span id="points-text"></span></div>
-                    <div class="elapsed"><span id="elapsed-text">00:00</span><i class="ti ti-hourglass"></i></div>
-                </div>
                 <div class="bar">
                     <div class="progress" id="progress-bar"></div>
                 </div>
-            </div>
-            <div class="word-container" id="word-container">
+                <div class="spread">
+                    <div class="points"><i class="ti ti-star-filled"></i><span id="points-text"></span></div>
+                    <div class="word-container" id="word-container">
+                    </div>
+                    <div class="elapsed"><span id="elapsed-text">00:00</span><i class="ti ti-hourglass"></i></div>
+                </div>
             </div>
             <div class="game-and-words">
                 <div class="content">

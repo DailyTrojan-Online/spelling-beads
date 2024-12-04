@@ -221,8 +221,8 @@
 
 #left-buttons button:hover,
 #right-buttons button:hover {
-    background: #edeef0;
-    color: #6f717c;
+    background: var(--button-bg);
+    color: var(--button-text);
 }
 
 #left-buttons button:disabled,
@@ -240,7 +240,7 @@
 }
 
 .row-wrapper {
-    background: linear-gradient(to bottom, transparent 0%, transparent calc(50% - 2px), var(--bead-color) calc(50% - 2px), var(--bead-color) calc(50% + 2px), transparent calc(50% + 2px));
+    background: linear-gradient(to bottom, transparent 0%, transparent calc(50% - 2px), var(--raised-surface-heavy) calc(50% - 2px), var(--raised-surface-heavy) calc(50% + 2px), transparent calc(50% + 2px));
     width: 100%;
     cursor: grab;
 }
@@ -260,7 +260,7 @@
 
 .letter {
     flex-shrink: 0;
-    background: var(--outline);
+    background: var(--raised-surface-heavy);
     border-radius: 100%;
     width: var(--bead-size);
     height: var(--bead-size);
@@ -283,6 +283,7 @@
 .letter-correct {
     transform: scale(1.2);
     background: var(--gold);
+    color: black;
 }
 
 @keyframes letter-correct {
@@ -298,6 +299,7 @@
 }
 
 .game-splash-wrapper {
+    color: black;
     background: var(--gold)
 }
 

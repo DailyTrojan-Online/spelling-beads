@@ -880,9 +880,9 @@ function updateUIWithSaveData() {
 
 function updateStats() {
 	let stats = loadData("history");
-	document.getElementById("total-plays").innerText = stats.length;
+	document.getElementById("total-plays").innerText = stats?.length ?? 0;
 	let totalWords = 0;
-	stats.forEach((e) => {
+	stats?.forEach((e) => {
 		totalWords += e.wordsFound;
 	});
 	document.getElementById("total-words").innerText = totalWords;

@@ -25,10 +25,10 @@
     <div class="game-splash-wrapper" id="splash">
         <img width="80" src="./imgs/spelling_beads.svg" />
         <h1>Spelling Beads</h1>
-        <h2>Find as many words as you can, as fast as you can</h2>
+        <h2 id="game-tagline">Find as many words as you can, as fast as you can</h2>
         <div class="flex-hor">
             <button onclick="back()">Back</button>
-            <button onclick="startGame()">Play</button>
+            <button onclick="startGame()" id="game-action-button">Play</button>
         </div>
         <p id="splash-date">date</p>
     </div>
@@ -55,7 +55,19 @@
                     <div id="right-buttons">
                     </div>
                 </div>
-                <div class="found-words" id="found-words">
+                <div class="found-words " id="found-words">
+
+                    <div class="history-stats">
+                        <div class="stat">
+                            <h1 id="total-plays">1</h1>
+                            <p>Days Played</p>
+                        </div>
+                        <div class="stat">
+                            <h1 id="total-words">3</h1>
+                            <p>Total Words</p>
+                        </div>
+                    </div>
+                    <h2>Todays Words</h2>
                 </div>
             </div>
             <div class="content">
@@ -68,10 +80,12 @@
             </div>
             <div class="flex-hor">
                 <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
-                <button onclick="toggleViewFoundWords()" id="found-words-button"><span>View Found Words</span></button>
+                <button onclick="toggleViewFoundWords()" id="found-words-button"><i
+                        class="ti ti-chart-bar"></i><span>View Stats</span></button>
             </div>
         </div>
     </main>
+
 </body>
 
 </html>

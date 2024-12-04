@@ -9,14 +9,18 @@ let rowTargetPositions = new Array(5).fill(0);
 let rowChanged = new Array(5).fill(false);
 let maxLettersPerRow = 10;
 let letters = new Array(rows);
+let gameFinished = false;
+let won = false;
 let correctWords = [];
 let beadWidth = 0;
 let beadGap = 0;
+let gameSeed = "";
 let beadRowMaxWidth = 0;
 let leftButtons = [];
 let rightButtons = [];
 let pointsText;
 let totalPoints = 0;
+let wordsFound = 0;
 let pointsAchieved = 0;
 let wordContainer;
 let progressBar;
@@ -330,6 +334,11 @@ function generateRows() {
 const root = document.documentElement;
 
 function init() {
+	gameSeed = new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	}).format(new Date());
 	gameSplash = document.getElementById("splash");
 	splashDate = document.getElementById("splash-date");
 	window.DTGCore = new DTGameCore(gameSplash, splashDate);
@@ -337,6 +346,7 @@ function init() {
 	generateRows();
 	console.log("generated");
 	const styles = getComputedStyle(root);
+	timerText = document.getElementById("elapsed-text");
 	beadWidth = parseInt(styles.getPropertyValue("--bead-size"));
 	beadGap = parseInt(styles.getPropertyValue("--bead-horizontal-gap"));
 	beadRowMaxWidth =
@@ -352,6 +362,20 @@ function init() {
 	wordContainer = document.getElementById("word-container");
 	foundWordsWrapper = document.getElementById("found-words");
 	foundWordsButton = document.getElementById("found-words-button");
+
+	let savedData = loadData("today");
+	if (savedData != null && savedData.date == gameSeed) {
+		wordsFound = savedData.amountOfWordsFound;
+		pointsAchieved = savedData.pointsAchieved;
+		allFoundWords = savedData.wordsFound;
+		gameFinished = savedData.complete;
+		won = savedData.won;
+		timerValue = savedData.timeElapsed;
+		document.getElementById("game-tagline").innerText = "You've already started searching today. What else can you find?"
+		document.getElementById("game-action-button").innerText = "Continue"
+		updateUIWithSaveData();
+	}
+	updateStats();
 
 	for (let i = 0; i < rows; i++) {
 		let leftButton = document.createElement("button");
@@ -534,6 +558,7 @@ function calculateWins() {
 			spacesAlreadyChecked[3][i] = true;
 			spacesAlreadyChecked[4][i] = true;
 			correctWordsFound.push(word);
+			wordsFound++;
 			correctWordLocations.push({ word, row: 0, col: i, length: 5 });
 		}
 	}
@@ -560,6 +585,7 @@ function calculateWins() {
 				spacesAlreadyChecked[r + 3][i] = true;
 
 				correctWordsFound.push(word);
+				wordsFound++;
 				correctWordLocations.push({ word, row: r, col: i, length: 4 });
 			}
 		}
@@ -580,6 +606,7 @@ function calculateWins() {
 					!spacesAlreadyChecked[r + 2][i])
 			) {
 				correctWordsFound.push(word);
+				wordsFound++;
 				correctWordLocations.push({ word, row: r, col: i, length: 3 });
 			}
 		}
@@ -627,6 +654,9 @@ function postCorrectnessCheck(locations) {
 		animatingCorrectWords = false;
 		leftButtons.forEach((e) => (e.disabled = false));
 		rightButtons.forEach((e) => (e.disabled = false));
+		saveGameProgress();
+		saveGameToHistory();
+		if (pointsAchieved >= totalPoints) gameWin();
 	}, totalDuration + (wordHangDuration + wordSeparation) * locations.length);
 }
 
@@ -652,6 +682,7 @@ function startCorrectWordAnimation(location) {
 	let foundWord = document.createElement("p");
 	foundWord.innerText = location.word;
 	foundWordsWrapper.appendChild(foundWord);
+	updateStats();
 
 	for (let i = 0; i < length; i++) {
 		let c = col + 1 + rowOffsets[row + i];
@@ -750,6 +781,13 @@ function shuffle(array) {
 	}
 }
 
+function gameWin() {
+	gameFinished = true;
+	won = true;
+	saveGameProgress();
+	saveGameToHistory();
+}
+
 function onResize() {
 	const styles = getComputedStyle(root);
 	beadWidth = parseInt(styles.getPropertyValue("--bead-size"));
@@ -767,7 +805,6 @@ let timerText;
 let timerInterval;
 let timerValue = 0; //in seconds
 function startTimer() {
-	timerText = document.getElementById("elapsed-text");
 	incrementTimer();
 }
 function incrementTimer() {
@@ -783,12 +820,79 @@ function incrementTimer() {
 	}, 1000);
 }
 
+function saveGameProgress() {
+	let gameObject = {
+		amountOfWordsFound: wordsFound,
+		wordsFound: allFoundWords,
+		pointsAchieved: pointsAchieved,
+		complete: gameFinished,
+		won: won,
+		timeElapsed: timerValue,
+		date: gameSeed,
+	};
+	saveData("today", gameObject);
+	
+	console.log("Game Progress Saved");
+}
+
+function saveGameToHistory() {
+	let history = loadData("history") ?? [];
+	//if there is history for today, update that history, otherwise add to the list
+	let found = false;
+	history.forEach((e) => {
+		if (e.date == gameSeed && !found) {
+			e.wordsFound = wordsFound;
+			found = true;
+			return;
+		}
+	});
+	if (!found) {
+		history.push({ date: gameSeed, wordsFound: wordsFound });
+	}
+	saveData("history", history);
+	updateStats();
+}
+
+function saveData(id, data) {
+	localStorage.setItem(id, JSON.stringify(data));
+}
+
+function loadData(id) {
+	return JSON.parse(localStorage.getItem(id));
+}
+
+function updateUIWithSaveData() {
+	let data = loadData("today");
+	if (data == null) return;
+	pointsText.innerHTML = `${pointsAchieved}/${totalPoints} pts`;
+	progressBar.style.width = `${(pointsAchieved / totalPoints) * 100}%`;
+	let minutes = Math.floor(timerValue / 60);
+	let seconds = timerValue % 60;
+	let minutesString = minutes < 10 ? "0" + minutes : minutes;
+	let secondsString = seconds < 10 ? "0" + seconds : seconds;
+	timerText.innerText = `${minutesString}:${secondsString}`;
+	data.wordsFound.forEach((w) => {
+		let foundWord = document.createElement("p");
+		foundWord.innerText = w;
+		foundWordsWrapper.appendChild(foundWord);
+	});
+}
+
+function updateStats() {
+	let stats = loadData("history");
+	document.getElementById("total-plays").innerText = stats.length;
+	let totalWords = 0;
+	stats.forEach((e) => {
+		totalWords += e.wordsFound;
+	});
+	document.getElementById("total-words").innerText = totalWords;
+}
+
 function startGame() {
 	DTGCore.hideSplashScreen();
 	setTimeout(() => {
 		startTimer();
 	}, 500);
 }
-
 
 init();

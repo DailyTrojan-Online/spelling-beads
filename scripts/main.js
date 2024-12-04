@@ -363,7 +363,7 @@ function init() {
 	foundWordsWrapper = document.getElementById("found-words");
 	foundWordsButton = document.getElementById("found-words-button");
 
-	let savedData = loadData("today");
+	let savedData = loadData("beads-today");
 	if (savedData != null && savedData.date == gameSeed) {
 		wordsFound = savedData.amountOfWordsFound;
 		pointsAchieved = savedData.pointsAchieved;
@@ -830,13 +830,13 @@ function saveGameProgress() {
 		timeElapsed: timerValue,
 		date: gameSeed,
 	};
-	saveData("today", gameObject);
+	saveData("beads-today", gameObject);
 	
 	console.log("Game Progress Saved");
 }
 
 function saveGameToHistory() {
-	let history = loadData("history") ?? [];
+	let history = loadData("beads-history") ?? [];
 	//if there is history for today, update that history, otherwise add to the list
 	let found = false;
 	history.forEach((e) => {
@@ -849,7 +849,7 @@ function saveGameToHistory() {
 	if (!found) {
 		history.push({ date: gameSeed, wordsFound: wordsFound });
 	}
-	saveData("history", history);
+	saveData("beads-history", history);
 	updateStats();
 }
 
@@ -862,7 +862,7 @@ function loadData(id) {
 }
 
 function updateUIWithSaveData() {
-	let data = loadData("today");
+	let data = loadData("beads-today");
 	if (data == null) return;
 	pointsText.innerHTML = `${pointsAchieved}/${totalPoints} pts`;
 	progressBar.style.width = `${(pointsAchieved / totalPoints) * 100}%`;
@@ -879,7 +879,7 @@ function updateUIWithSaveData() {
 }
 
 function updateStats() {
-	let stats = loadData("history");
+	let stats = loadData("beads-history");
 	document.getElementById("total-plays").innerText = stats?.length ?? 0;
 	let totalWords = 0;
 	stats?.forEach((e) => {

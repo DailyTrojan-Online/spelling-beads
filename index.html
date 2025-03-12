@@ -43,8 +43,12 @@
                     <div class="points"><i class="ti ti-star-filled"></i><span id="points-text"></span></div>
                     <div class="word-container" id="word-container">
                     </div>
+                    <div class="todays-theme">TODAY's THEME:</div>
                     <div class="elapsed"><span id="elapsed-text">00:00</span><i class="ti ti-hourglass"></i></div>
                 </div>
+            </div>
+            <div class="theme-bar">
+                <div class="theme">🍎 🍌 🍇 🍋 🍑</div>
             </div>
             <div class="game-and-words">
                 <div class="content">
@@ -55,6 +59,7 @@
                     <div id="right-buttons">
                     </div>
                 </div>
+
                 <div class="found-words " id="found-words">
 
                     <div class="history-stats">
@@ -79,9 +84,10 @@
                 </div>
             </div>
             <div class="flex-hor">
-                <button onclick="shuffleRows()"><i class="ti ti-refresh"></i><span>Shuffle Rows</span></button>
+                <button onclick="shuffleRows()"><i class="ti ti-refresh"></i></button>
+                <button onclick="calculateWins()"><span>Check Answer</span></button>
                 <button onclick="toggleViewFoundWords()" id="found-words-button"><i
-                        class="ti ti-chart-bar"></i><span>View Stats</span></button>
+                        class="ti ti-chart-bar"></i></button>
             </div>
         </div>
     </main>

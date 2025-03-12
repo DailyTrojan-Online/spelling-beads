@@ -28,12 +28,12 @@ let foundWordsWrapper;
 let foundWordsButton;
 
 let gameWeights = {
-	maxPerRow: 7,
+	maxPerRow: 9,
 	visible: 5,
-	fiveLetter: 2,
+	fiveLetter: 1,
 	fourLetterTop: 1,
 	fourLetterBottom: 1,
-	fourLetterMostUnique: 2,
+	fourLetterMostUnique: 1,
 	pointsFromFiveLetter: 5,
 	pointsFromFourLetter: 3,
 	pointsFromThreeLetter: 1,
@@ -47,16 +47,24 @@ function generateRows() {
 	for (let i = 0; i < rows; i++) {
 		letters[i] = new Array();
 	}
-	let totalFiveLetterWords = gameWeights.fiveLetter;
-	let totalFourLetterWords =
-		gameWeights.fourLetterTop +
-		gameWeights.fourLetterBottom +
-		gameWeights.fourLetterMostUnique;
+	let totalFiveLetterWords = 0;
+	let totalFourLetterWords = 0
 	let totalThreeLetterWords = 0;
 	correctWords = [];
+	let overrideWords = [];
+	overrideWords = [
+		"APPLE",
+		"GRAPE",
+		"LEMON",
+		"PEACH",
+		"SCALE",
+		"BUNCH",
+		"FRUIT",
+		"SALAD",
+	];
 
-	for (let i = 0; i < gameWeights.fiveLetter; i++) {
-		let word = DTGCore.randomArrayElement(fiveLetter);
+	for (let i = 0; i < overrideWords.length; i++) {
+		let word = overrideWords[i];
 		if (correctWords.includes(word)) {
 			i--;
 			continue;
@@ -65,8 +73,10 @@ function generateRows() {
 		for (let j = 0; j < word.length; j++) {
 			if (!letters[j].includes(word[j])) letters[j].push(word[j]);
 		}
+		totalFiveLetterWords++;
 		correctWords.push(word);
 	}
+	correctWords = overrideWords;
 	//now we generate the 4 letter words. for each 4 letter word we generate,
 	// we will also generate a "score" for it, that indicates how well it fits within the rest
 	// of the letters. we want to add 4 letter words that share letters in common, but also have unique letters
@@ -77,9 +87,30 @@ function generateRows() {
 
 	let iteratedUponFourLetterWords = [];
 	let fourLetterWordsList = [];
+	let overrideFourLetterList = ["AWAY", "LIFE"];
 	let maxIteratedFourLetterWords = 40;
-	for (let i = 0; i < maxIteratedFourLetterWords; i++) {
-		let word = DTGCore.randomArrayElement(fourLetter);
+	// for (let i = 0; i < maxIteratedFourLetterWords; i++) {
+	// 	let word = DTGCore.randomArrayElement(fourLetter);
+	// 	if (iteratedUponFourLetterWords.includes(word)) {
+	// 		i--;
+	// 		continue;
+	// 	}
+	// 	let topScore = 0;
+	// 	let bottomScore = 0;
+	// 	for (let j = 0; j < word.length; j++) {
+	// 		if (letters[j].includes(word[j])) {
+	// 			topScore++;
+	// 		}
+	// 		if (letters[j + 1].includes(word[j])) {
+	// 			bottomScore++;
+	// 		}
+	// 	}
+	// 	iteratedUponFourLetterWords.push(word);
+	// 	fourLetterWordsList.push({ word, topScore, bottomScore });
+	// }
+
+	for (let i = 0; i < overrideFourLetterList.length; i++) {
+		let word = overrideFourLetterList[i];
 		if (iteratedUponFourLetterWords.includes(word)) {
 			i--;
 			continue;
@@ -97,6 +128,8 @@ function generateRows() {
 		iteratedUponFourLetterWords.push(word);
 		fourLetterWordsList.push({ word, topScore, bottomScore });
 	}
+
+	console.log(fourLetterWordsList);
 	let fourLetterTop = [...fourLetterWordsList];
 	fourLetterTop.sort((a, b) => b.topScore - a.topScore);
 	for (let i = 0; i < gameWeights.fourLetterTop; i++) {
@@ -120,10 +153,12 @@ function generateRows() {
 			if (!letters[j].includes(word[j])) letters[j].push(word[j]);
 		}
 		correctWords.push(word);
+		totalFourLetterWords++;
 	}
 	let fourLetterBottom = [...fourLetterWordsList];
 	fourLetterBottom.sort((a, b) => b.bottomScore - a.bottomScore);
 	for (let i = 0; i < gameWeights.fourLetterBottom; i++) {
+		if (fourLetterBottom.length === 0) break;
 		let word = fourLetterBottom[0].word;
 		//first, check to make sure that this word isnt "in" another word "e.g." bake and baker
 		let existCheck = false;
@@ -143,13 +178,19 @@ function generateRows() {
 		for (let j = 0; j < word.length; j++) {
 			if (!letters[j + 1].includes(word[j])) letters[j + 1].push(word[j]);
 		}
+		totalFourLetterWords++;
 		correctWords.push(word);
 	}
 	let fourLetterMostUnique = [...fourLetterWordsList];
-	fourLetterMostUnique.sort(
-		(a, b) => a.topScore + a.bottomScore - b.topScore - b.bottomScore
-	);
+	console.log(fourLetterMostUnique);
+	setTimeout(() => {
+		console.log(fourLetterMostUnique);
+	}, 1);
+	// fourLetterMostUnique.sort(
+	// 	(a, b) => a.topScore + a.bottomScore - b.topScore - b.bottomScore
+	// );
 	for (let i = 0; i < gameWeights.fourLetterMostUnique; i++) {
+		if (fourLetterMostUnique.length === 0) break;
 		let word = fourLetterMostUnique[0].word;
 		//first, check to make sure that this word isnt "in" another word "e.g." bake and baker
 		let existCheck = false;
@@ -171,7 +212,9 @@ function generateRows() {
 				letters[j + (i % 2)].push(word[j]);
 		}
 		correctWords.push(word);
+		totalFourLetterWords++;
 	}
+	console.log(letters);
 
 	//at this point, we can calculate the capacity of each row. for the three letter words,
 	// we want to use them to fill up the lowest capacity rows with unique letters
@@ -194,11 +237,13 @@ function generateRows() {
 	let iteratedUponThreeLetterWords = [];
 	let actualIterations = 0;
 	let maxIterations = 100;
+	let threeLetterWords = ["DAY"]
 	for (let i = 0; i < capacity[rowIndicesByCapacity[0]]; i++) {
 		actualIterations++;
 		if (actualIterations > maxIterations) break;
 		let actualRowIndex = Math.min(rowIndicesByCapacity[0], 2); // because we only have 5 rows, and the words are 3 letters long, prevents overflow
-		let word = DTGCore.randomArrayElement(threeLetter);
+		if(threeLetterWords.length == 0) break;
+		let word = threeLetterWords.shift();
 		if (iteratedUponThreeLetterWords.includes(word)) {
 			i--;
 			continue;
@@ -215,20 +260,8 @@ function generateRows() {
 			i--;
 			continue;
 		}
-		//now we must only add this word if it is ENTIRELY UNIQUE
-		let unique = true;
 		for (let j = 0; j < word.length; j++) {
-			if (letters[actualRowIndex + j].includes(word[j])) {
-				unique = false;
-				break;
-			}
-		}
-		if (!unique) {
-			i--;
-			continue;
-		}
-		for (let j = 0; j < word.length; j++) {
-			letters[actualRowIndex + j].push(word[j]);
+			if(!letters[actualRowIndex + j].includes(word[j]))letters[actualRowIndex + j].push(word[j]);
 		}
 		totalThreeLetterWords++;
 		correctWords.push(word);
@@ -257,61 +290,61 @@ function generateRows() {
 	// we will add them to the list of correct words, and then we will print out the board
 
 	//TODO: this is really messy nested loops, try and make this prettier
-	//five letters
-	for (let c = 0; c < maxLettersPerRow; c++) {
-		for (let cc = 0; cc < maxLettersPerRow; cc++) {
-			for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
-				for (let cccc = 0; cccc < maxLettersPerRow; cccc++) {
-					for (let ccccc = 0; ccccc < maxLettersPerRow; ccccc++) {
-						let word =
-							letters[0][c] +
-							letters[1][cc] +
-							letters[2][ccc] +
-							letters[3][cccc] +
-							letters[4][ccccc];
-						if (fiveLetter.includes(word) && !correctWords.includes(word)) {
-							correctWords.push(word);
-							totalFiveLetterWords++;
-						}
-					}
-				}
-			}
-		}
-	}
-	//four letters
-	for (let r = 0; r < 2; r++) {
-		for (let c = 0; c < maxLettersPerRow; c++) {
-			for (let cc = 0; cc < maxLettersPerRow; cc++) {
-				for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
-					for (let cccc = 0; cccc < maxLettersPerRow; cccc++) {
-						let word =
-							letters[r][c] +
-							letters[r + 1][cc] +
-							letters[r + 2][ccc] +
-							letters[r + 3][cccc];
-						if (fourLetter.includes(word) && !correctWords.includes(word)) {
-							correctWords.push(word);
-							totalFourLetterWords++;
-						}
-					}
-				}
-			}
-		}
-	}
-	//three letters
-	for (let r = 0; r < 3; r++) {
-		for (let c = 0; c < maxLettersPerRow; c++) {
-			for (let cc = 0; cc < maxLettersPerRow; cc++) {
-				for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
-					let word = letters[r][c] + letters[r + 1][cc] + letters[r + 2][ccc];
-					if (threeLetter.includes(word) && !correctWords.includes(word)) {
-						correctWords.push(word);
-						totalThreeLetterWords++;
-					}
-				}
-			}
-		}
-	}
+	// //five letters
+	// for (let c = 0; c < maxLettersPerRow; c++) {
+	// 	for (let cc = 0; cc < maxLettersPerRow; cc++) {
+	// 		for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
+	// 			for (let cccc = 0; cccc < maxLettersPerRow; cccc++) {
+	// 				for (let ccccc = 0; ccccc < maxLettersPerRow; ccccc++) {
+	// 					let word =
+	// 						letters[0][c] +
+	// 						letters[1][cc] +
+	// 						letters[2][ccc] +
+	// 						letters[3][cccc] +
+	// 						letters[4][ccccc];
+	// 					if (fiveLetter.includes(word) && !correctWords.includes(word)) {
+	// 						correctWords.push(word);
+	// 						totalFiveLetterWords++;
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// //four letters
+	// for (let r = 0; r < 2; r++) {
+	// 	for (let c = 0; c < maxLettersPerRow; c++) {
+	// 		for (let cc = 0; cc < maxLettersPerRow; cc++) {
+	// 			for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
+	// 				for (let cccc = 0; cccc < maxLettersPerRow; cccc++) {
+	// 					let word =
+	// 						letters[r][c] +
+	// 						letters[r + 1][cc] +
+	// 						letters[r + 2][ccc] +
+	// 						letters[r + 3][cccc];
+	// 					if (fourLetter.includes(word) && !correctWords.includes(word)) {
+	// 						correctWords.push(word);
+	// 						totalFourLetterWords++;
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// //three letters
+	// for (let r = 0; r < 3; r++) {
+	// 	for (let c = 0; c < maxLettersPerRow; c++) {
+	// 		for (let cc = 0; cc < maxLettersPerRow; cc++) {
+	// 			for (let ccc = 0; ccc < maxLettersPerRow; ccc++) {
+	// 				let word = letters[r][c] + letters[r + 1][cc] + letters[r + 2][ccc];
+	// 				if (threeLetter.includes(word) && !correctWords.includes(word)) {
+	// 					correctWords.push(word);
+	// 					totalThreeLetterWords++;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	console.log(
 		"Total words generated: " +
@@ -371,8 +404,9 @@ function init() {
 		gameFinished = savedData.complete;
 		won = savedData.won;
 		timerValue = savedData.timeElapsed;
-		document.getElementById("game-tagline").innerText = "You've already started searching today. What else can you find?"
-		document.getElementById("game-action-button").innerText = "Continue"
+		document.getElementById("game-tagline").innerText =
+			"You've already started searching today. What else can you find?";
+		document.getElementById("game-action-button").innerText = "Continue";
 		updateUIWithSaveData();
 	}
 	updateStats();
@@ -463,7 +497,6 @@ function onPointerUp(e, i) {
 		Math.round(rowPositions[i] / (beadWidth + beadGap)) * (beadWidth + beadGap);
 	rowOffsets[i] = -1 * Math.round(rowPositions[i] / (beadWidth + beadGap));
 	beginPositionLerp(i);
-	calculateWins();
 }
 
 function onPointerMove(e, i) {
@@ -502,7 +535,6 @@ function incrementRow(i, c) {
 		rowTargetPositions[i] += beadRowMaxWidth;
 	}
 	beginPositionLerp(i);
-	calculateWins();
 }
 
 function beginPositionLerp(i) {
@@ -540,17 +572,21 @@ function calculateWins() {
 			visibleLetters[r].push(letters[r][idx]);
 		}
 	}
+	console.log(correctWords, allFoundWords)
+	console.log(visibleLetters)
 	//now we need to check if visible letters contain any of our correct words
 	let correctWordsFound = [];
 	let correctWordLocations = [];
+	let wordAlreadyFound = false;
 	//first, five letters are easiest
-	for (let i = 0; i < gameWeights.visible; i++) {
+		let i = Math.floor(gameWeights.visible / 2)
 		let word =
 			visibleLetters[0][i] +
 			visibleLetters[1][i] +
 			visibleLetters[2][i] +
 			visibleLetters[3][i] +
 			visibleLetters[4][i];
+			if(allFoundWords.includes(word)) wordAlreadyFound = true;
 		if (correctWords.includes(word) && !allFoundWords.includes(word)) {
 			spacesAlreadyChecked[0][i] = true;
 			spacesAlreadyChecked[1][i] = true;
@@ -560,17 +596,19 @@ function calculateWins() {
 			correctWordsFound.push(word);
 			wordsFound++;
 			correctWordLocations.push({ word, row: 0, col: i, length: 5 });
-		}
+		
 	}
 	//now, four letters
 	for (let r = 0; r < 2; r++) {
-		for (let i = 0; i < gameWeights.visible; i++) {
+		let i = Math.floor(gameWeights.visible / 2)
 			let word =
 				visibleLetters[r][i] +
 				visibleLetters[r + 1][i] +
 				visibleLetters[r + 2][i] +
 				visibleLetters[r + 3][i];
 			//because we can have four letter words which are "sub" words of a five letter word, such as bake and baker, we need to make sure that at least one of the spaces hasnt already been checked as won
+			
+			if(allFoundWords.includes(word)) wordAlreadyFound = true;
 			if (
 				correctWords.includes(word) &&
 				!allFoundWords.includes(word) &&
@@ -587,17 +625,19 @@ function calculateWins() {
 				correctWordsFound.push(word);
 				wordsFound++;
 				correctWordLocations.push({ word, row: r, col: i, length: 4 });
-			}
+			
 		}
 	}
 	//now, three letters
 	for (let r = 0; r < 3; r++) {
-		for (let i = 0; i < gameWeights.visible; i++) {
+		let i = Math.floor(gameWeights.visible / 2)
 			let word =
 				visibleLetters[r][i] +
 				visibleLetters[r + 1][i] +
 				visibleLetters[r + 2][i];
 			//because a three letter word can be a sub of a four or five letter word, BUT can still be a unique word (consider flage is a column, where flag and age are two valid words), we need to see if at the very least one of the spaces has not been already checked
+			
+			if(allFoundWords.includes(word)) wordAlreadyFound = true;
 			if (
 				correctWords.includes(word) &&
 				!allFoundWords.includes(word) &&
@@ -609,7 +649,10 @@ function calculateWins() {
 				wordsFound++;
 				correctWordLocations.push({ word, row: r, col: i, length: 3 });
 			}
-		}
+		
+	}
+	if(wordAlreadyFound) {
+		DTGCore.showToast("Word already found", "ti-search");
 	}
 	//now, we need to add the words to the list of all found words
 	correctWordsFound.forEach((e) => {
@@ -685,7 +728,10 @@ function startCorrectWordAnimation(location) {
 	updateStats();
 
 	for (let i = 0; i < length; i++) {
-		let c = col + 1 + rowOffsets[row + i];
+		let c =
+			col +
+			(gameWeights.maxPerRow - gameWeights.visible) / 2+
+			rowOffsets[row + i];
 		if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
 		if (c < 0) c += gameWeights.maxPerRow;
 		for (let j = 0; j < 3; j++) {
@@ -695,11 +741,16 @@ function startCorrectWordAnimation(location) {
 			letter.style.transitionDelay = `${i * letterOffset}ms`;
 		}
 	}
+	wordContainer.classList.add("bg-in")
 	setTimeout(() => {
 		wordEl.classList.add("fade-out");
 		ptsEl.classList.add("fade-out");
+		wordContainer.classList.remove("bg-in");
 		for (let i = 0; i < length; i++) {
-			let c = col + 1 + rowOffsets[row + i];
+			let c =
+				col +
+				(gameWeights.maxPerRow - gameWeights.visible) / 2+
+				rowOffsets[row + i];
 			if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
 			if (c < 0) c += gameWeights.maxPerRow;
 			for (let j = 0; j < 3; j++) {
@@ -831,7 +882,7 @@ function saveGameProgress() {
 		date: gameSeed,
 	};
 	saveData("beads-today", gameObject);
-	
+
 	console.log("Game Progress Saved");
 }
 

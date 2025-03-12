@@ -32,6 +32,14 @@
     display: grid;
     width: 100%;
     grid-template-columns: 1fr 2fr 1fr;
+    position: relative;
+}
+.todays-theme {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0
 }
 
 .points-bar {
@@ -59,7 +67,7 @@
 
 .points-bar .bar {
     width: 100%;
-    height: 20px;
+    height: 10px;
     border: 1px solid var(--outline);
     background: var(--raised-surface);
     overflow: hidden;
@@ -71,6 +79,25 @@
     background: var(--gold);
     transition: width 0.2s;
 }
+
+.theme-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    font-family: "Nunito", monospace;
+}
+.theme-bar .theme {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    font-size: 30px;
+}
+
 .word-container {
     display: flex;
     justify-content: center;
@@ -78,6 +105,8 @@
     gap: 10px;
     min-height: 35px;
     height: 100%;
+    transition: 0.2s background .2s;
+    z-index: 1
 }
 .correct-word {
     font-size: 1.5rem;
@@ -129,6 +158,11 @@
 
 .game-and-words {
     position: relative;
+}
+.bg-in {
+    background: var(--body-background);
+    transition-delay: 0s;
+    transition: 0.05s background 0s
 }
 
 .content {
@@ -182,9 +216,11 @@
     align-items: center;
     gap: var(--bead-vertical-gap);
     width: calc(var(--visible-width) + var(--fade-width) * 2);
-    mask-image: linear-gradient(to right, transparent, black var(--fade-width), black calc(100% - var(--fade-width)), transparent 100%);
+    mask-image: linear-gradient(to right, transparent, #0007 var(--fade-width), #0007 calc(50% - 40px - (var(--bead-size) / 2)), black calc(50% - (var(--bead-size) / 2)), black calc(50% + (var(--bead-size) / 2)), #0007 calc(50% + 40px + (var(--bead-size) / 2)), #0007 calc(100% - var(--fade-width)), transparent 100%);
     padding: 20px 0;
     position: relative;
+
+    background: linear-gradient(to bottom, var(--body-background) 5px, transparent 20px, transparent calc(100% - 20px), var(--body-background) calc(100% - 5px)), linear-gradient(to right, transparent 0%, transparent calc(50% - 2px), var(--raised-surface-heavy) calc(50% - 2px), var(--raised-surface-heavy) calc(50% + 2px), transparent calc(50% + 2px));
 }
 
 #left-buttons,

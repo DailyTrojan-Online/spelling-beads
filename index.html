@@ -20,7 +20,7 @@
 
     <header>
         <img id="dt-logo" src="./imgs/dt-logo.png" height="50" width=auto style="cursor: pointer;"
-            onclick="homeRedirect()" alt="Daily Trojan Logo" />
+            onclick="DTGCore.homeRedirect()" alt="Daily Trojan Logo" />
     </header>
     <div class="game-splash-wrapper" id="splash">
         <img width="80" src="./imgs/spelling_beads.svg" />
@@ -78,8 +78,6 @@
             <div class="content">
                 <div id="left-buttons">
                 </div>
-                <div id="row-fade-wrapper">
-                </div>
                 <div id="right-buttons">
                 </div>
             </div>
@@ -91,6 +89,24 @@
             </div>
         </div>
     </main>
+    <div class="modal-wrapper" id="result-modal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <img width="80" src="./imgs/spelling_beads.svg" />
+                <h1 id="modal-title">Great job!</h1>
+                <h2>You completed Spelling Beads in<br><strong id="result-time">52 seconds</strong>.</h2>
+                <button class="close-button" onclick="viewGame()"><i class="ti ti-x"></i></button>
+                <div class="flex-hor">
+                    <button onclick="DTGCore.homeRedirect()"><i class="ti ti-device-gamepad"></i>All Games</button>
+                    <button onclick="copyResultsString()" class="button-share"><i class="ti ti-share"></i> Share
+                        Results</button>
+                </div>
+                <a
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSfzk0dC8SsfzfbbCXP4_YOsIw6ja_9zdOIVki3L48HX9QH-pg/viewform?usp=dialog">Help
+                    us improve Spelling Beads! <u>Share your feedback.</u></a>
+            </div>
+        </div>
+    </div>
 
 </body>
 

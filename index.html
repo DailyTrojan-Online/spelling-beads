@@ -36,18 +36,16 @@
         <div class="game-wrapper">
             <h1>Spelling Beads</h1>
             <div class="points-bar">
-                <div class="bar">
-                    <div class="progress" id="progress-bar"></div>
-                </div>
                 <div class="spread">
                     <div class="points"><i class="ti ti-star-filled"></i><span id="points-text"></span></div>
-                    <div class="word-container" id="word-container">
-                    </div>
+                    
                     <div class="todays-theme">TODAY's THEME:</div>
                     <div class="elapsed"><span id="elapsed-text">00:00</span><i class="ti ti-hourglass"></i></div>
                 </div>
             </div>
             <div class="theme-bar">
+                <div class="word-container" id="word-container">
+                </div>
                 <div class="theme">🍎 🍌 🍇 🍋 🍑</div>
             </div>
             <div class="game-and-words">
@@ -60,19 +58,20 @@
                     </div>
                 </div>
 
-                <div class="found-words " id="found-words">
-
-                    <div class="history-stats">
-                        <div class="stat">
-                            <h1 id="total-plays">1</h1>
-                            <p>Days Played</p>
-                        </div>
-                        <div class="stat">
-                            <h1 id="total-words">3</h1>
-                            <p>Total Words</p>
-                        </div>
-                    </div>
-                    <h2>Todays Words</h2>
+                <div class="found-words" id="found-words">
+                    <h2>Today's Words</h2>
+                    <div id="found-word-container"></div>
+                    <h2>Today's Hints</h2>
+                    <div id="found-hint-container"></div>
+                </div>
+                <div class="how-to-play" id="how-to-play">
+                    <h2>How to Play</h2>
+                    <h3>Find words related to today's <strong>theme.</strong></h3>
+                    <p>Theme words will highlight yellow when correct.</p>
+                    <p>Theme words include those found in phrases related to the theme.</p>
+                    <div class="divider"></div>
+                    <h3>Find three five-letter words to get <strong>hints.</strong></h3>
+                    <p>Hints are common phrases that relate to the theme.</p>
                 </div>
             </div>
             <div class="content">
@@ -82,10 +81,10 @@
                 </div>
             </div>
             <div class="flex-hor">
-                <button onclick="shuffleRows()"><i class="ti ti-refresh"></i></button>
+                <button onclick="toggleHowToPlay()"><i class="ti ti-question-mark"></i></button>
+                <button id="hint-button" onclick="getHint()" disabled>Get Hint</button>
                 <button onclick="calculateWins()"><span>Check Answer</span></button>
-                <button onclick="toggleViewFoundWords()" id="found-words-button"><i
-                        class="ti ti-chart-bar"></i></button>
+                <button onclick="toggleViewFoundWords()" id="found-words-button">Hints & Words</button>
             </div>
         </div>
     </main>
@@ -94,7 +93,7 @@
             <div class="modal-inner">
                 <img width="80" src="./imgs/spelling_beads.svg" />
                 <h1 id="modal-title">Great job!</h1>
-                <h2>You completed Spelling Beads in<br><strong id="result-time">52 seconds</strong>.</h2>
+                <h2>You completed Spelling Beads in<br><strong id="result-time"></strong>.</h2>
                 <button class="close-button" onclick="viewGame()"><i class="ti ti-x"></i></button>
                 <div class="flex-hor">
                     <button onclick="DTGCore.homeRedirect()"><i class="ti ti-device-gamepad"></i>All Games</button>

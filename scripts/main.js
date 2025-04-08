@@ -23,9 +23,16 @@ let totalPoints = 0;
 let wordsFound = 0;
 let pointsAchieved = 0;
 let wordContainer;
-let progressBar;
 let foundWordsWrapper;
+let foundWordsContainer;
 let foundWordsButton;
+
+let hintWordsFound = [];
+let hintIncrement = 0;
+
+let allHints = [];
+let currentHint = 0;
+let foundHints = [];
 
 let gameWeights = {
 	maxPerRow: 9,
@@ -42,14 +49,13 @@ let allFoundWords = [];
 let animatingCorrectWords = false;
 
 function generateRows(gameData) {
-	
 	// first, generate five letter words and add them to the list. these are going to be the words that are the basis of the whole operation
 	// we prioritize five letter words that do not have duplicate letters with what is already in each row
 	for (let i = 0; i < rows; i++) {
 		letters[i] = new Array();
 	}
 	let totalFiveLetterWords = 0;
-	let totalFourLetterWords = 0
+	let totalFourLetterWords = 0;
 	let totalThreeLetterWords = 0;
 	correctWords = [];
 
@@ -68,7 +74,7 @@ function generateRows(gameData) {
 	}
 	let iteratedUponFourLetterWords = [];
 	let fourLetterWordsList = [];
-	
+
 	for (let i = 0; i < gameData.fourLetter.length; i++) {
 		let word = gameData.fourLetter[i];
 		if (iteratedUponFourLetterWords.includes(word)) {
@@ -140,7 +146,7 @@ function generateRows(gameData) {
 		correctWords.push(word);
 	}
 	let fourLetterMostUnique = [...fourLetterWordsList];
-	
+
 	for (let i = 0; i < gameWeights.fourLetterMostUnique; i++) {
 		if (fourLetterMostUnique.length === 0) break;
 		let word = fourLetterMostUnique[0].word;
@@ -166,7 +172,7 @@ function generateRows(gameData) {
 		correctWords.push(word);
 		totalFourLetterWords++;
 	}
-	console.log(letters)
+	console.log(letters);
 	//at this point, we can calculate the capacity of each row. for the three letter words,
 	// we want to use them to fill up the lowest capacity rows with unique letters
 	let capacity = new Array(rows).fill(0);
@@ -192,7 +198,7 @@ function generateRows(gameData) {
 		actualIterations++;
 		if (actualIterations > maxIterations) break;
 		let actualRowIndex = Math.min(rowIndicesByCapacity[0], 2); // because we only have 5 rows, and the words are 3 letters long, prevents overflow
-		if(gameData.threeLetter.length == 0) break;
+		if (gameData.threeLetter.length == 0) break;
 		let word = gameData.threeLetter.shift();
 		if (iteratedUponThreeLetterWords.includes(word)) {
 			i--;
@@ -211,7 +217,8 @@ function generateRows(gameData) {
 			continue;
 		}
 		for (let j = 0; j < word.length; j++) {
-			if(!letters[actualRowIndex + j].includes(word[j]))letters[actualRowIndex + j].push(word[j]);
+			if (!letters[actualRowIndex + j].includes(word[j]))
+				letters[actualRowIndex + j].push(word[j]);
 		}
 		totalThreeLetterWords++;
 		correctWords.push(word);
@@ -267,11 +274,8 @@ function init() {
 	window.DTGCore = new DTGameCore(gameSplash, splashDate);
 	console.log("generating");
 	let gamedata = {
-		"fourLetter": [
-			"AWAY",
-			"LIFE",
-		],
-		"fiveLetter": [
+		fourLetter: ["AWAY", "LIFE"],
+		fiveLetter: [
 			"APPLE",
 			"GRAPE",
 			"LEMON",
@@ -281,8 +285,17 @@ function init() {
 			"FRUIT",
 			"SALAD",
 		],
-		"threeLetter": ["DAY"],
-	}
+		threeLetter: ["DAY"],
+		hints: [
+			"An 🍎 a ••• keeps the doctor ••••.",
+			"🍌 for •••••.",
+			"A ••••• of 🍇s.",
+			"When •••• gives you 🍋s...",
+			"🍎 🍌 🍇 🍋 🍑  •••••",
+		],
+	};
+	allHints = gamedata.hints;
+
 	generateRows(gamedata);
 	console.log("generated");
 	const styles = getComputedStyle(root);
@@ -296,11 +309,10 @@ function init() {
 	let rightButtonWrapper = document.getElementById("right-buttons");
 	pointsText = document.getElementById("points-text");
 	pointsText.innerHTML = `${wordsFound}/${correctWords.length} words`;
-	progressBar = document.getElementById("progress-bar");
-	progressBar.style.width = `${(wordsFound / correctWords.length) * 100}%`;
 	window.addEventListener("resize", onResize);
 	wordContainer = document.getElementById("word-container");
 	foundWordsWrapper = document.getElementById("found-words");
+	foundWordsContainer = document.getElementById("found-word-container");
 	foundWordsButton = document.getElementById("found-words-button");
 
 	let savedData = loadData("beads-today");
@@ -309,12 +321,18 @@ function init() {
 		pointsAchieved = savedData.pointsAchieved;
 		allFoundWords = savedData.wordsFound;
 		gameFinished = savedData.complete;
+		hintWordsFound = savedData.hintWordsFound;
+		hintIncrement = savedData.hintIncrement;
+		foundHints = savedData.foundHints;
+		currentHint = savedData.currentHint;
 		won = savedData.won;
 		timerValue = savedData.timeElapsed;
 		document.getElementById("game-tagline").innerText =
 			"You've already started searching today. What else can you find?";
 		document.getElementById("game-action-button").innerText = "Continue";
 		updateUIWithSaveData();
+		updateHintButton();
+		updateHintDisplay();
 	}
 	updateStats();
 
@@ -479,97 +497,185 @@ function calculateWins() {
 			visibleLetters[r].push(letters[r][idx]);
 		}
 	}
-	console.log(correctWords, allFoundWords)
-	console.log(visibleLetters)
+	console.log(correctWords, allFoundWords);
+	console.log(visibleLetters);
 	//now we need to check if visible letters contain any of our correct words
 	let correctWordsFound = [];
 	let correctWordLocations = [];
 	let wordAlreadyFound = false;
 	//first, five letters are easiest
-		let i = Math.floor(gameWeights.visible / 2)
-		let word =
-			visibleLetters[0][i] +
-			visibleLetters[1][i] +
-			visibleLetters[2][i] +
-			visibleLetters[3][i] +
-			visibleLetters[4][i];
-			if(allFoundWords.includes(word)) wordAlreadyFound = true;
-		if (correctWords.includes(word) && !allFoundWords.includes(word)) {
-			spacesAlreadyChecked[0][i] = true;
-			spacesAlreadyChecked[1][i] = true;
-			spacesAlreadyChecked[2][i] = true;
-			spacesAlreadyChecked[3][i] = true;
-			spacesAlreadyChecked[4][i] = true;
-			correctWordsFound.push(word);
-			wordsFound++;
-			correctWordLocations.push({ word, row: 0, col: i, length: 5 });
-		
+	let i = Math.floor(gameWeights.visible / 2);
+	let word =
+		visibleLetters[0][i] +
+		visibleLetters[1][i] +
+		visibleLetters[2][i] +
+		visibleLetters[3][i] +
+		visibleLetters[4][i];
+	if (allFoundWords.includes(word)) wordAlreadyFound = true;
+	if (correctWords.includes(word) && !allFoundWords.includes(word)) {
+		spacesAlreadyChecked[0][i] = true;
+		spacesAlreadyChecked[1][i] = true;
+		spacesAlreadyChecked[2][i] = true;
+		spacesAlreadyChecked[3][i] = true;
+		spacesAlreadyChecked[4][i] = true;
+		correctWordsFound.push(word);
+		wordsFound++;
+		correctWordLocations.push({ word, row: 0, col: i, length: 5 });
 	}
 	//now, four letters
 	for (let r = 0; r < 2; r++) {
-		let i = Math.floor(gameWeights.visible / 2)
-			let word =
-				visibleLetters[r][i] +
-				visibleLetters[r + 1][i] +
-				visibleLetters[r + 2][i] +
-				visibleLetters[r + 3][i];
-			//because we can have four letter words which are "sub" words of a five letter word, such as bake and baker, we need to make sure that at least one of the spaces hasnt already been checked as won
-			
-			if(allFoundWords.includes(word)) wordAlreadyFound = true;
-			if (
-				correctWords.includes(word) &&
-				!allFoundWords.includes(word) &&
-				!spacesAlreadyChecked[r][i] &&
-				!spacesAlreadyChecked[r + 1][i] &&
-				!spacesAlreadyChecked[r + 2][i] &&
-				!spacesAlreadyChecked[r + 3][i]
-			) {
-				spacesAlreadyChecked[r][i] = true;
-				spacesAlreadyChecked[r + 1][i] = true;
-				spacesAlreadyChecked[r + 2][i] = true;
-				spacesAlreadyChecked[r + 3][i] = true;
+		let i = Math.floor(gameWeights.visible / 2);
+		let word =
+			visibleLetters[r][i] +
+			visibleLetters[r + 1][i] +
+			visibleLetters[r + 2][i] +
+			visibleLetters[r + 3][i];
+		//because we can have four letter words which are "sub" words of a five letter word, such as bake and baker, we need to make sure that at least one of the spaces hasnt already been checked as won
 
-				correctWordsFound.push(word);
-				wordsFound++;
-				correctWordLocations.push({ word, row: r, col: i, length: 4 });
-			
+		if (allFoundWords.includes(word)) wordAlreadyFound = true;
+		if (
+			correctWords.includes(word) &&
+			!allFoundWords.includes(word) &&
+			!spacesAlreadyChecked[r][i] &&
+			!spacesAlreadyChecked[r + 1][i] &&
+			!spacesAlreadyChecked[r + 2][i] &&
+			!spacesAlreadyChecked[r + 3][i]
+		) {
+			spacesAlreadyChecked[r][i] = true;
+			spacesAlreadyChecked[r + 1][i] = true;
+			spacesAlreadyChecked[r + 2][i] = true;
+			spacesAlreadyChecked[r + 3][i] = true;
+
+			correctWordsFound.push(word);
+			wordsFound++;
+			correctWordLocations.push({ word, row: r, col: i, length: 4 });
 		}
 	}
 	//now, three letters
 	for (let r = 0; r < 3; r++) {
-		let i = Math.floor(gameWeights.visible / 2)
-			let word =
-				visibleLetters[r][i] +
-				visibleLetters[r + 1][i] +
-				visibleLetters[r + 2][i];
-			//because a three letter word can be a sub of a four or five letter word, BUT can still be a unique word (consider flage is a column, where flag and age are two valid words), we need to see if at the very least one of the spaces has not been already checked
-			
-			if(allFoundWords.includes(word)) wordAlreadyFound = true;
-			if (
-				correctWords.includes(word) &&
-				!allFoundWords.includes(word) &&
-				(!spacesAlreadyChecked[r][i] ||
-					!spacesAlreadyChecked[r + 1][i] ||
-					!spacesAlreadyChecked[r + 2][i])
-			) {
-				correctWordsFound.push(word);
-				wordsFound++;
-				correctWordLocations.push({ word, row: r, col: i, length: 3 });
-			}
-		
+		let i = Math.floor(gameWeights.visible / 2);
+		let word =
+			visibleLetters[r][i] +
+			visibleLetters[r + 1][i] +
+			visibleLetters[r + 2][i];
+		//because a three letter word can be a sub of a four or five letter word, BUT can still be a unique word (consider flage is a column, where flag and age are two valid words), we need to see if at the very least one of the spaces has not been already checked
+
+		if (allFoundWords.includes(word)) wordAlreadyFound = true;
+		if (
+			correctWords.includes(word) &&
+			!allFoundWords.includes(word) &&
+			(!spacesAlreadyChecked[r][i] ||
+				!spacesAlreadyChecked[r + 1][i] ||
+				!spacesAlreadyChecked[r + 2][i])
+		) {
+			correctWordsFound.push(word);
+			wordsFound++;
+			correctWordLocations.push({ word, row: r, col: i, length: 3 });
+		}
 	}
-	if(wordAlreadyFound) {
+	if (wordAlreadyFound) {
 		DTGCore.showToast("Word already found", "ti-search");
 	}
+
+	//next, we need to see if there is a 5 letter word that is valid, is not already found, and isnt a goal word. this will be a hint
+
+	if (allFoundWords.includes(word)) wordAlreadyFound = true;
+	if (
+		fiveLetter.includes(word) &&
+		!allFoundWords.includes(word) &&
+		!correctWords.includes(word) &&
+		!hintWordsFound.includes(word)
+	) {
+		spacesAlreadyChecked[0][i] = true;
+		spacesAlreadyChecked[1][i] = true;
+		spacesAlreadyChecked[2][i] = true;
+		spacesAlreadyChecked[3][i] = true;
+		spacesAlreadyChecked[4][i] = true;
+		hintIncrement++;
+		hintWordsFound.push(word);
+		correctWordLocations.push({ word, row: 0, col: i, length: 5, hint: true });
+	}
+
+	//we can also check for 4 letter words
+	for (let r = 0; r < 2; r++) {
+		let i = Math.floor(gameWeights.visible / 2);
+		let word =
+			visibleLetters[r][i] +
+			visibleLetters[r + 1][i] +
+			visibleLetters[r + 2][i] +
+			visibleLetters[r + 3][i];
+
+		if (allFoundWords.includes(word)) wordAlreadyFound = true;
+		if (fourLetter.includes(word) &&
+		!allFoundWords.includes(word) &&
+		!correctWords.includes(word) && 
+		!hintWordsFound.includes(word) && (!spacesAlreadyChecked[r][i] || !spacesAlreadyChecked[r + 1][i] || !spacesAlreadyChecked[r + 2][i] || !spacesAlreadyChecked[r + 3][i])) {
+			spacesAlreadyChecked[r][i] = true;
+			spacesAlreadyChecked[r + 1][i] = true;
+			spacesAlreadyChecked[r + 2][i] = true;
+			spacesAlreadyChecked[r + 3][i] = true;
+
+			hintIncrement++;
+			hintWordsFound.push(word);
+			correctWordLocations.push({ word, row: r, col: i, length: 4, hint: true });
+		}
+	} 
+
+
 	//now, we need to add the words to the list of all found words
 	correctWordsFound.forEach((e) => {
 		allFoundWords.push(e);
 	});
+
 	console.log(correctWordsFound);
 	console.log(correctWordLocations);
 
 	postCorrectnessCheck(correctWordLocations);
+	updateHintButton();
 }
+
+function updateHintButton() {
+	document
+		.getElementById("hint-button")
+		.style.setProperty("--hint-count", hintIncrement);
+	if (hintIncrement == 3) {
+		document.getElementById("hint-button").disabled = false;
+	} else {
+		document.getElementById("hint-button").disabled = true;
+	}
+}
+
+function getHint() {
+	if (hintIncrement != 3) return;
+	hintIncrement = 0;
+	updateHintButton();
+	let hint = allHints[currentHint];
+	foundHints.push(hint);
+	currentHint++;
+	updateHintDisplay();
+	saveGameProgress();
+	wordContainer.innerHTML = "";
+	let wordEl = document.createElement("div");
+	wordEl.classList.add("correct-word");
+	wordEl.innerHTML = hint;
+	wordContainer.classList.add("bg-in");
+	wordContainer.appendChild(wordEl);
+	setTimeout(() => {
+		wordEl.classList.add("fade-out");
+		wordContainer.classList.remove("bg-in");
+	}, 3000);
+}
+
+function updateHintDisplay() {
+	let p = document.getElementById("found-hint-container");
+	p.innerHTML = "";
+	foundHints.forEach((e) => {
+		let hint = document.createElement("p");
+		hint.innerText = e;
+		p.appendChild(hint);
+	});
+}
+
 let letterDuration = 200; //mseconds, needs to be the same as the animation in css
 let letterOffset = 100; //mseconds
 let wordHangDuration = 1000; //mseconds
@@ -595,7 +701,6 @@ function postCorrectnessCheck(locations) {
 					break;
 			}
 			pointsText.innerHTML = `${wordsFound}/${correctWords.length} words`;
-			progressBar.style.width = `${(wordsFound / correctWords.length) * 100}%`;
 			startCorrectWordAnimation(e);
 		}, totalDuration + i * (wordSeparation + wordHangDuration));
 		totalDuration += (e.length - 1) * letterOffset + letterDuration;
@@ -619,40 +724,44 @@ function startCorrectWordAnimation(location) {
 	wordEl.classList.add("correct-word");
 	wordEl.innerHTML = location.word;
 	wordContainer.appendChild(wordEl);
-	let foundWord = document.createElement("p");
-	foundWord.innerText = location.word;
-	foundWordsWrapper.appendChild(foundWord);
+	if (!location.hint) {
+		let foundWord = document.createElement("p");
+		foundWord.innerText = location.word;
+		foundWordsContainer.appendChild(foundWord);
+	}
 	updateStats();
 
 	for (let i = 0; i < length; i++) {
 		let c =
 			col +
-			(gameWeights.maxPerRow - gameWeights.visible) / 2+
+			(gameWeights.maxPerRow - gameWeights.visible) / 2 +
 			rowOffsets[row + i];
 		if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
 		if (c < 0) c += gameWeights.maxPerRow;
 		for (let j = 0; j < 3; j++) {
 			let letter = letterElementsPerRow[row + i][c][j];
 			// letter.style.animation = `letter-correct ${letterDuration}ms ease-in-out ${i * letterOffset}ms 1 forwards`;
-			letter.classList.add("letter-correct");
+			letter.classList.add("letter-correct" + (location.hint ? "-hint" : ""));
 			letter.style.transitionDelay = `${i * letterOffset}ms`;
 		}
 	}
-	wordContainer.classList.add("bg-in")
+	wordContainer.classList.add("bg-in");
 	setTimeout(() => {
 		wordEl.classList.add("fade-out");
 		wordContainer.classList.remove("bg-in");
 		for (let i = 0; i < length; i++) {
 			let c =
 				col +
-				(gameWeights.maxPerRow - gameWeights.visible) / 2+
+				(gameWeights.maxPerRow - gameWeights.visible) / 2 +
 				rowOffsets[row + i];
 			if (c >= gameWeights.maxPerRow) c -= gameWeights.maxPerRow;
 			if (c < 0) c += gameWeights.maxPerRow;
 			for (let j = 0; j < 3; j++) {
 				let letter = letterElementsPerRow[row + i][c][j];
 				letter.style.transitionDelay = `0ms`;
-				letter.classList.remove("letter-correct");
+				letter.classList.remove(
+					"letter-correct" + (location.hint ? "-hint" : "")
+				);
 			}
 		}
 	}, (length - 1) * letterOffset + letterDuration + wordHangDuration);
@@ -702,6 +811,8 @@ function shuffleRows() {
 function toggleViewFoundWords() {
 	foundWordsWrapper.classList.toggle("visible");
 	foundWordsButton.classList.toggle("active");
+	let howToPlay = document.getElementById("how-to-play");
+	howToPlay.classList.remove("visible");
 }
 
 function easeInOutQuad(t, b, c, d) {
@@ -737,9 +848,9 @@ function gameWin() {
 	let minutes = Math.floor(timerValue / 60);
 	let seconds = timerValue % 60;
 	let secondsString = seconds < 10 ? "0" + seconds : seconds;
-	if(minutes > 0) {
+	if (minutes > 0) {
 		result.innerText = `${minutes}:${secondsString}`;
-	}else {
+	} else {
 		result.innerText = `${seconds} seconds.`;
 	}
 	viewResults();
@@ -780,16 +891,27 @@ function incrementTimer() {
 function saveGameProgress() {
 	let gameObject = {
 		amountOfWordsFound: wordsFound,
+		hintWordsFound: hintWordsFound,
+		hintIncrement: hintIncrement,
 		wordsFound: allFoundWords,
 		pointsAchieved: pointsAchieved,
 		complete: gameFinished,
 		won: won,
 		timeElapsed: timerValue,
 		date: gameSeed,
+		foundHints: foundHints,
+		currentHint: currentHint,
 	};
 	saveData("beads-today", gameObject);
 
 	console.log("Game Progress Saved");
+}
+
+function toggleHowToPlay() {
+	let howToPlay = document.getElementById("how-to-play");
+	howToPlay.classList.toggle("visible");
+	foundWordsWrapper.classList.remove("visible");
+	foundWordsButton.classList.remove("active");
 }
 
 function saveGameToHistory() {
@@ -822,7 +944,6 @@ function updateUIWithSaveData() {
 	let data = loadData("beads-today");
 	if (data == null) return;
 	pointsText.innerHTML = `${wordsFound}/${correctWords.length} words`;
-	progressBar.style.width = `${(wordsFound / correctWords.length) * 100}%`;
 	let minutes = Math.floor(timerValue / 60);
 	let seconds = timerValue % 60;
 	let minutesString = minutes < 10 ? "0" + minutes : minutes;
@@ -831,11 +952,12 @@ function updateUIWithSaveData() {
 	data.wordsFound.forEach((w) => {
 		let foundWord = document.createElement("p");
 		foundWord.innerText = w;
-		foundWordsWrapper.appendChild(foundWord);
+		foundWordsContainer.appendChild(foundWord);
 	});
 }
 
 function updateStats() {
+	return;
 	let stats = loadData("beads-history");
 	document.getElementById("total-plays").innerText = stats?.length ?? 0;
 	let totalWords = 0;
@@ -854,7 +976,6 @@ function startGame() {
 
 init();
 
-
 function viewResults() {
 	document.getElementById("result-modal").classList.add("modal-visible");
 }
@@ -862,12 +983,9 @@ function viewGame() {
 	document.getElementById("result-modal").classList.remove("modal-visible");
 }
 
-
-let completeCopyFormat =
-	"I completed the {0} Spelling Beads in {1}!\n{2}";
+let completeCopyFormat = "I completed the {0} Spelling Beads in {1} and used {2} hint{3}!\n{4}";
 
 function copyResultsString() {
-
 	let minutes = Math.floor(timerValue / 60);
 	let seconds = timerValue % 60;
 	let minutesString = minutes < 10 ? "0" + minutes : minutes;
@@ -880,12 +998,23 @@ function copyResultsString() {
 	}).format(new Date());
 	if (mobileCheck()) {
 		navigator.share({
-			text: DTGCore.formatString(completeCopyFormat, date, time, window.location.href),
+			text: DTGCore.formatString(
+				completeCopyFormat,
+				date,
+				time,
+				currentHint,
+				hintIncrement == 1 ? "" : "s",
+				window.location.href
+			),
 			url: window.location.href,
 		});
 	} else {
 		DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
-		DTGCore.copyToClipboard(DTGCore.formatString(completeCopyFormat,date,  time, window.location.href));
+		DTGCore.copyToClipboard(
+			DTGCore.formatString(completeCopyFormat, date, time,
+				currentHint,
+				hintIncrement == 1 ? "" : "s", window.location.href)
+		);
 	}
 }
 

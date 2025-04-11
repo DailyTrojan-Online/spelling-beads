@@ -368,6 +368,13 @@ function init() {
 			},
 			{ passive: false }
 		);
+		wrapper.addEventListener(
+			"wheel",
+			function (e) {
+				onWheel(e, i);
+			},
+			{ passive: false }
+		)
 		document.addEventListener(
 			"pointerup",
 			function (e) {
@@ -437,6 +444,32 @@ function onPointerMove(e, i) {
 
 	rowEls[i].style.transform = `translateX(${rowPositions[i]}px)`;
 	prevMousePositionX = e.clientX;
+}
+let wheelTimeouts = new Array(5).fill(null);
+function onWheel(e, i) {
+	e.preventDefault();
+
+	rowPositions[i] -= e.deltaX;
+	if (rowPositions[i] > beadRowMaxWidth / 2) {
+		rowPositions[i] -= beadRowMaxWidth;
+	}
+	if (rowPositions[i] < -beadRowMaxWidth / 2) {
+		rowPositions[i] += beadRowMaxWidth;
+	}
+	rowEls[i].style.transform = `translateX(${rowPositions[i]}px)`;
+
+	if (wheelTimeouts[i] != null) {
+		clearTimeout(wheelTimeouts[i]);
+	}
+	wheelTimeouts[i] = setTimeout(() => {
+		finishWheel(i);
+	}, 100);
+}
+function finishWheel(i) {
+	rowTargetPositions[i] =
+		Math.round(rowPositions[i] / (beadWidth + beadGap)) * (beadWidth + beadGap);
+	rowOffsets[i] = -1 * Math.round(rowPositions[i] / (beadWidth + beadGap));
+	beginPositionLerp(i);
 }
 
 function incrementRow(i, c) {
@@ -659,8 +692,13 @@ function getHint() {
 	wordEl.classList.add("correct-word");
 	wordEl.innerHTML = hint;
 	wordContainer.classList.add("bg-in");
+	let titleEl = document.createElement("div");
+	titleEl.classList.add('todays-theme');
+	titleEl.innerHTML = "NEW HINT:";
+	wordContainer.appendChild(titleEl);
 	wordContainer.appendChild(wordEl);
 	setTimeout(() => {
+		titleEl.classList.add("fade-out");
 		wordEl.classList.add("fade-out");
 		wordContainer.classList.remove("bg-in");
 	}, 3000);
@@ -723,6 +761,11 @@ function startCorrectWordAnimation(location) {
 	let wordEl = document.createElement("div");
 	wordEl.classList.add("correct-word");
 	wordEl.innerHTML = location.word;
+
+	let titleEl = document.createElement("div");
+	titleEl.classList.add('todays-theme');
+	titleEl.innerHTML = (location.hint ? "HINT" : "THEME") + " WORD:";
+	wordContainer.appendChild(titleEl);
 	wordContainer.appendChild(wordEl);
 	if (!location.hint) {
 		let foundWord = document.createElement("p");
@@ -747,6 +790,7 @@ function startCorrectWordAnimation(location) {
 	}
 	wordContainer.classList.add("bg-in");
 	setTimeout(() => {
+		titleEl.classList.add("fade-out");
 		wordEl.classList.add("fade-out");
 		wordContainer.classList.remove("bg-in");
 		for (let i = 0; i < length; i++) {

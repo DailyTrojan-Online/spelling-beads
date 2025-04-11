@@ -9,6 +9,10 @@
     --visible-width: calc(var(--bead-size) * var(--visible-beads) + var(--bead-horizontal-gap) * (var(--visible-beads) - 1));
     --fade-width: 25px;
 }
+body {
+
+    overscroll-behavior: none !important;
+}
 
 @media screen and (max-width: 550px) {
     :root {
@@ -36,6 +40,8 @@
 }
 .todays-theme {
     text-align: center;
+    font-family: "Geist Mono", monospace;
+    transition: 0.2s opacity;
 }
 
 .points-bar {
@@ -102,6 +108,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     gap: 10px;
     min-height: 35px;
     width: 100%;
@@ -158,6 +165,9 @@
 }
 
 .game-and-words {
+    position: relative;
+}
+.top-details {
     position: relative;
 }
 .bg-in {
@@ -362,6 +372,7 @@
     background: linear-gradient(to bottom, transparent 0%, transparent calc(50% - 2px), var(--raised-surface-heavy) calc(50% - 2px), var(--raised-surface-heavy) calc(50% + 2px), transparent calc(50% + 2px));
     width: 100%;
     cursor: grab;
+    touch-action: pan-x;
 }
 
 .row-wrapper:active {
